@@ -47,11 +47,7 @@ Route::prefix('login')->group(function () {
     Route::post('/forgotPass', [AuthController::class, 'forgotPass']);
     Route::post('/resendOTP', [AuthController::class, 'resendOTP']);
 });
-Route::prefix('user')->group(function () {
-    Route::get('/show', [AuthController::class, 'showAlluser']);
-    Route::get('/show/{id}', [AuthController::class, 'showUser']);
-    Route::get('/follower/{id}', [followController::class, 'show']);
-});
+
 Route::prefix('video')->group(function () {
     Route::get('/', [VideoController::class, 'index']);
     Route::get('/show', [VideoController::class, 'show1']); //showallvideo
@@ -72,6 +68,7 @@ Route::get('/videoPage-cmt/{id}', [VideoController::class, 'showcmt']); //
 Route::prefix('check')->group(function () {
     Route::post('/likeVideo', [VideoController::class, 'CheckLikeVideo']);
     Route::post('/countShare', [VideoController::class, 'countShare']);
+    Route::post('/checkFollow', [AuthController::class, 'checkFollow']);
 });
 
 /// add count++
@@ -79,4 +76,13 @@ Route::prefix('add')->group(function () {
     Route::post('/addviewVideo', [VideoController::class, 'addview']);
     Route::post('/addlikeVideo', [VideoController::class, 'addlike']);
     Route::post('/addShareVideo', [VideoController::class, 'addshare']);
+});
+
+///////// USERPAGE/////
+Route::prefix('user')->group(function () {
+    Route::post('/show', [AuthController::class, 'showUser']);
+    Route::post('/follower', [followController::class, 'show']);
+    Route::get('/showVideo/{id}', [VideoController::class, 'showUserVideo']);
+    Route::get('/showRating/{id}', [AuthController::class, 'showRating']);
+    Route::get('/showDescription/{id}', [AuthController::class, 'showDescription']);
 });

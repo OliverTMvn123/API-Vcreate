@@ -278,10 +278,15 @@ class VideoController extends Controller
                 }
                 if(isset($request['idUser']))
                 {
-                    $user=$functionController->getUserInfor($request['idUser']);
-                    if (!empty($user)) {
-                        $all['status'] = LikeVideo::where('user_id', $user->id)->exists();
+                    if(!empty($request['idUser']))
+                    {
+                        $user=$functionController->getUserInfor($request['idUser']);
+                        return $user;
+                        if (!empty($user)) {
+                            $all['status'] = LikeVideo::where('user_id', $user->id)->exists();
+                        }
                     }
+                        
                 }
                 return $all;
             }
@@ -377,5 +382,28 @@ class VideoController extends Controller
                     }
                 return false;
             }
+        }
+        public function showUserVideo($id)
+        {
+            if (!empty($id)) {
+                $functionController = new functionController();
+                $videos = Video::all();
+                $videodata = [];
+                foreach ($videos as $video) {
+                    $hashedIdUser = hash('sha256', $video->idUser);
+                    if (hash_equals($hashedIdUser, $id)) {
+                        $videoArray = $video->toArray();
+                        $videoArray['idUser'] = $functionController->hashfuc($video->idUser);
+                        $videoArray['addressVideo'] = $functionController->getImage($video->adressVideo);
+                        $idsave = $video['id'];
+                        unset($videoArray['adressVideo'], $videoArray['updated_at'], $videoArray['id']);
+                        $videoArray['id'] = $functionController->hashfuc($idsave);
+                        $videoArray['thumbNail'] = $functionController->getImage($video->thumbNail);
+                        $videodata[] = $videoArray;
+                    }
+                }
+                return response()->json($videodata);
+            }
+            return null;
         }
 }

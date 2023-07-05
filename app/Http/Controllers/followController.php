@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\follow;
 use App\Models\userinformation;
+use Illuminate\Support\Facades\DB;
+
 class followController extends Controller
 {
     /**
@@ -45,14 +47,37 @@ class followController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
+    public function show(Request $request)
     {
-        $data = follow::where('user_id', $id)
-        ->join('userinformations', 'follows.user_follower_id', '=', 'userinformations.id')
-        ->select('follows.id','follows.user_follower_id','userinformations.name','userinformations.avatar')
-        ->get();
-        return $data;
+        if (isset($request['idUser'])) {
+            if (!empty($request['idUser'])) {
+                $data = follow::all();
+                foreach ($data as $row) {
+                    $hashedId = hash('sha256', $row->user_id);
+                    if (hash_equals($hashedId, $request['idUser'])) {
+                        $functionController = new functionController();
+                        $data1 = follow::where('user_id', $row->user_id)
+                            ->join('userinformations', 'follows.user_follower_id', '=', 'userinformations.id')
+                            ->select( 'follows.user_follower_id', 'userinformations.name', 'userinformations.avatar')
+                            ->get();
+                            $returndata=[];
+                            foreach ($data1 as $row) {
+                                $Arrcmt = $row->toArray();
+                                $Arrcmt['user_follower_id']=$functionController->hashfuc($row['user_follower_id']);
+                                $Arrcmt['name']=$row['name'];
+                                $Arrcmt['avatar']=$functionController->getImage($row['avatar']);
+                                $averageRating = DB::table('ratings')->where('user_id', $row->user_follower_id)->avg('rating');
+                                $Arrcmt["userRating"] = round($averageRating, 1);
+                                $returndata[]=$Arrcmt;
+                            }
+                        return $returndata;
+                    }
+                }
+            }
+        }
+        return false;
     }
+    
 
     /**
      * Show the form for editing the specified resource.

@@ -10,7 +10,9 @@ use App\Models\category;
 use App\Models\comments;
 use App\Models\likecmt;
 use App\Models\LikeVideo;
+use App\Models\follow;
 
+use App\Models\user;
 class functionController extends Controller
 {
     public function getVideo($id)
@@ -23,6 +25,18 @@ class functionController extends Controller
             }
         }
         return null; // Trả về null nếu không tìm thấy video
+    }
+
+    public function getVideoUser($id)
+    {
+        $videos = Video::all();
+        $data=[];
+        foreach ($videos as $video) {
+            if ($video->idUser==$id){
+                $data[]= $video;
+            }
+        }
+        return $data;
     }
     public function getcmt($id)
     {
@@ -80,6 +94,7 @@ class functionController extends Controller
                 return $user;
             }
         }
+        return null;
     }
     public function getUserInfor($id)
     {
@@ -90,6 +105,7 @@ class functionController extends Controller
                 return $user;
             }
         }
+        return null;
     }
     public function getImage($link)
     {
@@ -102,5 +118,55 @@ class functionController extends Controller
         $VideoPath = 'video/' . $link;
         $VideoURL = Storage::url($VideoPath);
         return  url($VideoURL);;
+    }
+    public function hashfuc($item)
+    {
+        $tam=(string)$item;
+        $re = hash('sha256', $item);
+        return $re;
+    }
+    public function CheckFollow($idUser,$idUserCheck){
+        
+        $data = follow::all();
+        $total=0;
+        $total1=0;
+        foreach ($data as $row) {
+            $hashedId = hash('sha256', $row->user_id);
+            $hashedIdCheck = hash('sha256', $row->user_Follower_id);
+            if (hash_equals($hashedId, $idUser) && hash_equals($hashedIdCheck, $idUserCheck)) {
+                $total++;
+            }
+            if (hash_equals($hashedId, $idUserCheck) && hash_equals($hashedIdCheck, $idUser)) {
+                $total1++;
+            }
+        }
+        if($total==1 && $total1==1)
+        {
+            return 2;
+        }
+        elseif($total==1 && $total1==0)
+        {
+            return 1;
+        }
+        elseif($total==0 && $total1==0)
+        {
+            return 0;
+        }else{
+            return -1;
+        }
+    }
+    public function getFollower($idUser){
+        $data = follow::where('user_id', $idUser)
+        ->join('userinformations', 'follows.user_follower_id', '=', 'userinformations.id')
+        ->select('follows.id','follows.user_follower_id','userinformations.name','userinformations.avatar')
+        ->get();
+        return $data;
+    }
+    public function getFollowing($idUser){
+        $data = follow::where('user_Follower_id', $idUser)
+        ->join('userinformations', 'follows.user_id', '=', 'userinformations.id')
+        ->select('follows.id','follows.user_id','userinformations.name','userinformations.avatar')
+        ->get();
+        return $data;
     }
 }

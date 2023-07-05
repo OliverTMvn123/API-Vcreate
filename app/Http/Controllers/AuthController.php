@@ -11,38 +11,42 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Mail\Message;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\DB;
+
 use App\Models\TemporaryRequest;
-use App\Http\Controllers\HomepageController;
+use App\Http\Controllers\functionController;
 use App\Mail\OTPVerification;
 use App\Models\User;
 use App\Models\Role;
+use App\Models\linksocal;
 use App\Models\userinformation;
+use App\Models\rating;
 
 class AuthController extends Controller
 {
     public function login(Request $request)
     {
         $credentials = $request->only('email', 'password');
-
+       
         if (Auth::attempt($credentials)) {
+           
             $user = Auth::user();
             $user->load('role');
             $tam = $user->load('information');
             $token = $user->createToken('authToken')->plainTextToken;
-            $homepageController = new HomepageController();
+            $functionController = new functionController();
             $data = [
-                'id' => hash('sha256', $user['id']),
+                'id' => hash('sha256', $user->information['id']),
                 'email' => $user['email'],
                 'role' => hash('sha256', $user['role']->id),
                 'role_name' => $user['role']->name,
                 'infor' => $user->information->name,
-                'avatar' => empty($user->information->avatar) ? null : $homepageController->getImage($user->information->avatar),
+                'avatar' => empty($user->information->avatar) ? null : $functionController->getImage($user->information->avatar),
                 'access_token' => $token,
             ];
-
-            return response()->json([$data]);
+            return  response()->json($data);
         }
-        $text = false;
+        $text = 'false';
         return response()->make($text);
         //return $request;
     }
@@ -258,60 +262,146 @@ class AuthController extends Controller
             return false;
         }
     }
-    public function showAlluser()
-    {
+    // public function showAlluser()
+    // {
 
-        $users = User::all();
+    //     $users = User::all();
 
-        $data = [];
-        $homepageController =new HomepageController();
-        foreach ($users as $user) {
-            $user->load('role');
-            $user->load('information');
-            if (empty($user['avatar'])) {
-                $user->information['avatar'] = null;
-            } else {
+    //     $data = [];
+    //     $homepageController =new HomepageController();
+    //     foreach ($users as $user) {
+    //         $user->load('role');
+    //         $user->load('information');
+    //         if (empty($user['avatar'])) {
+    //             $user->information['avatar'] = null;
+    //         } else {
                 
-                $user->information['avatar'] = $homepageController->getImage($user['avatar']);
-            }
-            $userData = [
-                'id' => hash('sha256', $user->id),
-                'email' => $user->email,
-                'phoneNumber' => $user->information->phoneNumber,
-                'address' => $user->information->address,
-                'descriptions' => $user->information->descriptions,
-                'avatar' => $user->information->avatar,
-                'gender' => $user->information->gender,
-                'role' => hash('sha256', $user->role->id),
-                'role_name' => $user->role->name,
-                'infor' => $user->information->name,
-            ];
+    //             $user->information['avatar'] = $homepageController->getImage($user['avatar']);
+    //         }
+    //         $userData = [
+    //             'id' => hash('sha256', $user->id),
+    //             'email' => $user->email,
+    //             'phoneNumber' => $user->information->phoneNumber,
+    //             'address' => $user->information->address,
+    //             'descriptions' => $user->information->descriptions,
+    //             'avatar' => $user->information->avatar,
+    //             'gender' => $user->information->gender,
+    //             'role' => hash('sha256', $user->role->id),
+    //             'role_name' => $user->role->name,
+    //             'infor' => $user->information->name,
+    //         ];
 
-            $data[] = $userData;
-        }
+    //         $data[] = $userData;
+    //     }
 
-        return $data;
-    }
-    public function showUser($id)
+    //     return $data;
+    // }
+    public function showUser(Request $request)
     {
+       
+        if(isset($request['idUser']))
+        {
+            $functionController = new functionController();
+            $user = $functionController->getUser($request['idUser']);
+            if(!empty($user))
+            {
+                $user->load('role');
+                $user->load('information');
 
-        $user = User::find($id);
-        $user->load('role');
-        $user->load('information');
-        $userData = [
-            'id' => hash('sha256', $user->id),
-            'email' => $user->email,
-            'phoneNumber' => $user->information->phoneNumber,
-            'address' => $user->information->address,
-            'descriptions' => $user->information->descriptions,
-            'avatar' => $user->information->avatar,
-            'gender' => $user->information->gender,
-            'role' => hash('sha256', $user->role->id),
-            'role_name' => $user->role->name,
-            'infor' => $user->information->name,
-        ];
-        $data[] = $userData;
-        return response()->json($data);
+                $point= rating::where('user_id',$user->information->id)->avg('rating');
+                $rating = round($point, 1);
+
+                $follower= $functionController->getFollower($user->information->id);
+                $following= $functionController->getFollowing($user->information->id);
+                $videos= $functionController->getVideoUser($user->information->id);
+
+                $userData = [
+                    'id' => hash('sha256', $user->id),
+                    'name'=>$user->information->name,
+                    'avatar' => $functionController->getImage($user->information->avatar),
+                    'follower'=> count($follower),
+                    'following'=> count($following),
+                    'countVideo'=> count($videos),
+                    'rating'=> $rating ,
+                    
+                ];
+                
+                return response()->json($userData);
+            }
+        }
     }
+    public function checkFollow(Request $request)
+    {
+        if(isset($request['idUser'])&&isset($request['idUserCheck']))
+        {
+            if(!empty($request['idUser']) && !empty($request['idUserCheck']))
+            {
+                $functionController = new functionController();
+                $check = $functionController->checkFollow($request['idUser'],$request['idUserCheck']);
+                if($check == 2)
+                {
+                    return "RS002";
+                }elseif($check==1)
+                {
+                    return "RS001";
+                }elseif($check==0)
+                {
+                    return "RS000";
+                }else{
+                    return "RS003";
+                }
+            }
+            return null;
+        }
+        return null;
+    }
+    public function showRating($id)
+    {
+        if(!empty($id))
+        {
+            $data=rating::all();
+                foreach ($data as $row) {
+                    $hashedId = hash('sha256', $row->user_id);
+                    if (hash_equals($hashedId, $id)) {
+                        $averageRating = DB::table('ratings')->where('user_id', $row->user_id)->avg('rating');
+                        $rating["userRating"] = round($averageRating, 1);
+                        return $rating;
+                    }
+                }
+        }
+        return null;
+    }
+    public function showDescription($id)
+    {
+        if (!empty($id)) {
+            $functionController = new functionController();
+            $data = $functionController->getUserInfor($id);
+            $array = [];
     
+            if (!empty($data)) {
+                $linksocal = linksocal::where('user_id', $data['id'])->first();
+                $array['descriptions'] = isset($data['descriptions']) ? $data['descriptions'] : null;
+    
+                if (!empty($linksocal)) {
+                    $array['facebook'] = isset($linksocal->facebook) ? $linksocal->facebook : null;
+                    $array['instagram'] = isset($linksocal->instagram) ? $linksocal->instagram : null;
+                    $array['youtube'] = isset($linksocal->youtube) ? $linksocal->youtube : null;
+                } else {
+                    $array['facebook'] = null;
+                    $array['instagram'] = null;
+                    $array['youtube'] = null;
+                }
+                $array['createTime']=$data->created_time;
+                
+            } else {
+                $array['descriptions'] = null;
+            }
+    
+            $array[] = isset($data['descriptions']) ? $data['descriptions'] : null;
+            unset($array['0']);
+            return $array;
+        }
+    
+        return null;
+    }
 }

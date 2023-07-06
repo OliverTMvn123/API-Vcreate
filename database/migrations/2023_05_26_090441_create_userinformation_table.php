@@ -21,6 +21,8 @@ return new class extends Migration
             $table->string('gender')->nullable();
             $table->string('descriptions')->nullable();
             $table->string('avatar')->nullable();
+            $table->string('background')->nullable();
+
             $table->timestamps();
 
         });

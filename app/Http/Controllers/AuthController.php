@@ -302,23 +302,22 @@ class AuthController extends Controller
         if(isset($request['idUser']))
         {
             $functionController = new functionController();
-            $user = $functionController->getUser($request['idUser']);
+            $user = $functionController->getUserInfor($request['idUser']);
             if(!empty($user))
             {
-                $user->load('role');
-                $user->load('information');
-
-                $point= rating::where('user_id',$user->information->id)->avg('rating');
+                $point= rating::where('user_id',$user->id)->avg('rating');
                 $rating = round($point, 1);
 
-                $follower= $functionController->getFollower($user->information->id);
-                $following= $functionController->getFollowing($user->information->id);
-                $videos= $functionController->getVideoUser($user->information->id);
+                $follower= $functionController->getFollower($user->id);
+                $following= $functionController->getFollowing($user->id);
+                $videos= $functionController->getVideoUser($user->id);
 
                 $userData = [
                     'id' => hash('sha256', $user->id),
-                    'name'=>$user->information->name,
-                    'avatar' => $functionController->getImage($user->information->avatar),
+                    'name'=>$user->name,
+                    'avatar' =>    empty($user->avatar) ? null : $functionController->getImage($user->avatar),
+                 
+                    'background' =>  empty($user->background) ? null : $functionController->getImage($user->background),
                     'follower'=> count($follower),
                     'following'=> count($following),
                     'countVideo'=> count($videos),
@@ -330,6 +329,7 @@ class AuthController extends Controller
             }
         }
     }
+
     public function checkFollow(Request $request)
     {
         if(isset($request['idUser'])&&isset($request['idUserCheck']))

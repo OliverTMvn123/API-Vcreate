@@ -439,7 +439,14 @@ class VideoController extends Controller
                         $videoArray = $row->toArray();
                         $save=$videoArray['id'];
                         $videoArray['video_id']=$functionController->hashfuc($row['video_id']);
+                        $getVideo= $functionController->getVideo($videoArray['video_id']);
+                        $videoArray['idUser'] = $functionController->hashfuc($getVideo->idUser);
+                        $videoArray['addressVideo'] = $functionController->getImage($getVideo->adressVideo);
+                        $idsave = $getVideo['id'];
+                        $videoArray['thumbNail'] = $functionController->getImage($getVideo->thumbNail);
                         $videoArray['album_id']=$functionController->hashfuc($row['album_id']);
+                        $videoArray['titleVideo']=$getVideo['titleVideo'];
+                        unset($videoArray['adressVideo'], $videoArray['updated_at'], $videoArray['id']);
                         unset($videoArray['updated_at'],$videoArray['id']);
                         $videoArray['id'] = $functionController->hashfuc($save);
                         $dataR[]=$videoArray;

@@ -14,6 +14,8 @@ use App\Models\LikeVideo;
 use App\Models\shareVideo;
 use App\Models\replycmt;
 use App\Models\likeReplycmt;
+use App\Models\album;
+use App\Models\detailAlbum;
 
 use App\Http\Controllers\HomepageController;
 
@@ -174,13 +176,11 @@ class VideoController extends Controller
                     $functionController = new functionController();
                     foreach ($cocreations as $index => $cocreation) {
                         $cocreationData = []; 
-                 
-                        $cocreationData["video_id"] = $this->hashfuc($video->id); 
                         $cocreationData["user_id"] = $this->hashfuc($cocreation->user_id);
                         $userid = $cocreation->user_id;
                         $user = userinformation::find($userid);
                         if ($user) {
-                            $cocreationData["user_name"] = $user->name;
+                            $cocreationData["name"] = $user->name;
                             $cocreationData["avatar"] = empty($user['avatar']) ? null : $functionController->getImage($user['avatar']);
                             $averageRating = DB::table('ratings')->where('user_id', $user->id)->avg('rating');
                             $cocreationData["userRating"] = round($averageRating, 1);
@@ -405,5 +405,49 @@ class VideoController extends Controller
                 return response()->json($videodata);
             }
             return null;
+        }
+        public function showAlbum($id){
+            if(!empty($id)){
+                $functionController = new functionController();
+                $data=album::all();
+                $dataR=[];
+                foreach($data as $row)
+                {
+                    $videoArray = $row->toArray();
+                    $save=$videoArray['id'];
+                    $videoArray['user_id']=$functionController->hashfuc($row['user_id']);
+                    $videoArray['thumbnail']=$functionController->getImage($row['thumbnail']);
+                    unset($videoArray['updated_at'],$videoArray['id']);
+                    $videoArray['id'] = $functionController->hashfuc($save);
+                    $dataR[]=$videoArray;
+                }
+                return $dataR;
+            }else{
+                return null;
+            }
+        }
+        public function showvideoAlbum($id){
+            if(!empty($id)){
+                $functionController = new functionController();
+                $getAlbum= $functionController->getAlbum($id);
+                if(!empty($getAlbum))
+                {
+                    $data=detailAlbum::where('album_id',$getAlbum['id'])->get();
+                    $dataR=[];
+                    foreach($data as $row)
+                    {
+                        $videoArray = $row->toArray();
+                        $save=$videoArray['id'];
+                        $videoArray['video_id']=$functionController->hashfuc($row['video_id']);
+                        $videoArray['album_id']=$functionController->hashfuc($row['album_id']);
+                        unset($videoArray['updated_at'],$videoArray['id']);
+                        $videoArray['id'] = $functionController->hashfuc($save);
+                        $dataR[]=$videoArray;
+                    }
+                    return $dataR;
+                }
+            }else{
+                return null;
+            }
         }
 }

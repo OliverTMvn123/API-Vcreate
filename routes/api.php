@@ -85,4 +85,7 @@ Route::prefix('user')->group(function () {
     Route::get('/showVideo/{id}', [VideoController::class, 'showUserVideo']);
     Route::get('/showRating/{id}', [AuthController::class, 'showRating']);
     Route::get('/showDescription/{id}', [AuthController::class, 'showDescription']);
+    Route::get('/albumUser/{id}', [VideoController::class, 'showAlbum']);
 });
+Route::get('/videoAlbum/{id}', [VideoController::class, 'showvideoAlbum']);
+

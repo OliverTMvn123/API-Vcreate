@@ -11,6 +11,9 @@ use App\Models\comments;
 use App\Models\likecmt;
 use App\Models\LikeVideo;
 use App\Models\follow;
+use App\Models\album;
+use App\Models\deltailAlbum;
+
 
 use App\Models\user;
 class functionController extends Controller
@@ -103,6 +106,17 @@ class functionController extends Controller
             $hashedId = hash('sha256', $user->id);
             if (hash_equals($hashedId, $id)) {
                 return $user;
+            }
+        }
+        return null;
+    }
+    public function getAlbum($id)
+    {
+        $albums = album::all();
+        foreach ($albums as $album) {
+            $hashedId = hash('sha256', $album->id);
+            if (hash_equals($hashedId, $id)) {
+                return $album;
             }
         }
         return null;

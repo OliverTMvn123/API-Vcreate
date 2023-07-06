@@ -391,7 +391,7 @@ class AuthController extends Controller
                     $array['instagram'] = null;
                     $array['youtube'] = null;
                 }
-                $array['createTime']=$data->created_time;
+                $array['createTime']=$data->created_at;
                 
             } else {
                 $array['descriptions'] = null;

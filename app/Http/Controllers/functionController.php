@@ -110,6 +110,18 @@ class functionController extends Controller
         }
         return null;
     }
+    public function getAllalbum($id)
+    {
+        $albums = album::all();
+        $data=[];
+        foreach ($albums as $album) {
+            $hashedId = hash('sha256', $album->user_id);
+            if (hash_equals($hashedId, $id)) {
+                $data[]=$album;
+            }
+        }
+        return $data;
+    }
     public function getAlbum($id)
     {
         $albums = album::all();

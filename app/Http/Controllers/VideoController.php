@@ -409,19 +409,25 @@ class VideoController extends Controller
         public function showAlbum($id){
             if(!empty($id)){
                 $functionController = new functionController();
-                $data=album::all();
-                $dataR=[];
-                foreach($data as $row)
+                $data= $functionController->getAllalbum($id);
+                if(!empty($data))
                 {
-                    $videoArray = $row->toArray();
-                    $save=$videoArray['id'];
-                    $videoArray['user_id']=$functionController->hashfuc($row['user_id']);
-                    $videoArray['thumbnail']=$functionController->getImage($row['thumbnail']);
-                    unset($videoArray['updated_at'],$videoArray['id']);
-                    $videoArray['id'] = $functionController->hashfuc($save);
-                    $dataR[]=$videoArray;
-                }
-                return $dataR;
+                    $dataR=[];
+                    foreach ($data as $videoArray) {
+                        $row =$videoArray->toArray();
+                        $save = $row['id'];
+                        $row['countVideo']=detailAlbum::where('album_id',$save)->count();
+                        $row['thumbnail'] = empty($row['thumbnail']) ? null : $functionController->getImage($row['thumbnail']);
+                        
+                        unset($row['updated_at'], $row['id'],$row['user_id']);
+                        $row['id'] = $functionController->hashfuc($save);
+                        $dataR[] = $row;
+                    }
+                        return $dataR;
+                 }
+                 else{
+                    return null;
+                 }
             }else{
                 return null;
             }
@@ -441,9 +447,11 @@ class VideoController extends Controller
                         $videoArray['video_id']=$functionController->hashfuc($row['video_id']);
                         $getVideo= $functionController->getVideo($videoArray['video_id']);
                         $videoArray['idUser'] = $functionController->hashfuc($getVideo->idUser);
-                        $videoArray['addressVideo'] = $functionController->getImage($getVideo->adressVideo);
+                        $videoArray['addressVideo'] =empty($getVideo->adressVideo) ? null : $functionController->getImage($getVideo->adressVideo);
+                        
                         $idsave = $getVideo['id'];
-                        $videoArray['thumbNail'] = $functionController->getImage($getVideo->thumbNail);
+                        $videoArray['thumbNail'] =  empty($getVideo->thumbNail) ? null : $functionController->getImage($getVideo->thumbNail);
+                   
                         $videoArray['album_id']=$functionController->hashfuc($row['album_id']);
                         $videoArray['titleVideo']=$getVideo['titleVideo'];
                         unset($videoArray['adressVideo'], $videoArray['updated_at'], $videoArray['id']);

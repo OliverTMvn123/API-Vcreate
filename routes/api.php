@@ -76,6 +76,12 @@ Route::prefix('add')->group(function () {
     Route::post('/addviewVideo', [VideoController::class, 'addview']);
     Route::post('/addlikeVideo', [VideoController::class, 'addlike']);
     Route::post('/addShareVideo', [VideoController::class, 'addshare']);
+    //add video
+    Route::get('/showFriend/{id}', [VideoController::class, 'showFriend']);
+    Route::get('/showcategory/{id}', [VideoController::class, 'showcategory']);
+    Route::post('/addVideo', [VideoController::class, 'addVideo']);
+
+
 });
 
 ///////// USERPAGE/////
@@ -86,6 +92,10 @@ Route::prefix('user')->group(function () {
     Route::get('/showRating/{id}', [AuthController::class, 'showRating']);
     Route::get('/showDescription/{id}', [AuthController::class, 'showDescription']);
     Route::get('/albumUser/{id}', [VideoController::class, 'showAlbum']);
+    //////History, WAS LIKE, WAS SAVE
+    Route::get('/history/{id}', [VideoController::class, 'showHistory']);
+    Route::post('/history', [VideoController::class, 'addHistory']); // chưa
 });
 Route::get('/videoAlbum/{id}', [VideoController::class, 'showvideoAlbum']);
+
 

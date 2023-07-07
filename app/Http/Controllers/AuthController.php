@@ -316,7 +316,7 @@ class AuthController extends Controller
                     'id' => hash('sha256', $user->id),
                     'name'=>$user->name,
                     'avatar' =>    empty($user->avatar) ? null : $functionController->getImage($user->avatar),
-                 
+                  
                     'background' =>  empty($user->background) ? null : $functionController->getImage($user->background),
                     'follower'=> count($follower),
                     'following'=> count($following),
@@ -371,7 +371,7 @@ class AuthController extends Controller
         }
         return null;
     }
-    public function showDescription($id)
+    public function showDescription($id) 
     {
         if (!empty($id)) {
             $functionController = new functionController();

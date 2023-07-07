@@ -455,7 +455,6 @@ class VideoController extends Controller
                         $videoArray['album_id']=$functionController->hashfuc($row['album_id']);
                         $videoArray['titleVideo']=$getVideo['titleVideo'];
                         unset($videoArray['adressVideo'], $videoArray['updated_at'], $videoArray['id']);
-                        unset($videoArray['updated_at'],$videoArray['id']);
                         $videoArray['id'] = $functionController->hashfuc($save);
                         $dataR[]=$videoArray;
                     }
@@ -465,4 +464,45 @@ class VideoController extends Controller
                 return null;
             }
         }
+        public function showHistory($id){
+            
+            $data= video::all();
+            return $data;
+        }
+        public function showFriend($id)
+        {
+            if(!empty($id)){
+                $functionController = new functionController();
+                $getUser= $functionController->getUserInfor($id);
+                if(!empty($getUser))
+                {
+                    $data=$functionController->getFollower($getUser->id);
+                    $dataR=[];
+                    if(!empty($data))
+                    {
+                        foreach($data as $row)
+                        {
+                            $hashedId = hash('sha256', $getUser->id);
+                            $hashedIdCheck = hash('sha256',$row->user_follower_id);
+                            $return = $functionController->CheckFollow( $hashedId,$hashedIdCheck);
+                            if($return == 2)
+                            {   
+                                $id=$row['user_follower_id'];
+                                unset($row['id']);
+                                $row['user_follower_id']=$functionController->hashfuc($row['user_follower_id']);
+                                $row['avatar']=empty($row['avatar']) ? null : $functionController->getImage( $row['avatar']);
+                                $a=DB::table('ratings')->where('user_id', $id)->avg('rating');
+                                $row['userRating']= round($a, 1);
+                                $dataR=$row;
+                            }
+                        }
+                        return $dataR;
+                    }
+                   return null;
+                }
+            }else{
+                return null;
+            }
+        }
+        
 }

@@ -9,5 +9,5 @@ class linksocal extends Model
 {
     use HasFactory;
     protected $table = 'link_socal';
-    public $timestamps = true;
+    public $timestamps = true; 
 }

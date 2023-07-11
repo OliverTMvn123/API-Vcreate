@@ -262,40 +262,6 @@ class AuthController extends Controller
             return false;
         }
     }
-    // public function showAlluser()
-    // {
-
-    //     $users = User::all();
-
-    //     $data = [];
-    //     $homepageController =new HomepageController();
-    //     foreach ($users as $user) {
-    //         $user->load('role');
-    //         $user->load('information');
-    //         if (empty($user['avatar'])) {
-    //             $user->information['avatar'] = null;
-    //         } else {
-                
-    //             $user->information['avatar'] = $homepageController->getImage($user['avatar']);
-    //         }
-    //         $userData = [
-    //             'id' => hash('sha256', $user->id),
-    //             'email' => $user->email,
-    //             'phoneNumber' => $user->information->phoneNumber,
-    //             'address' => $user->information->address,
-    //             'descriptions' => $user->information->descriptions,
-    //             'avatar' => $user->information->avatar,
-    //             'gender' => $user->information->gender,
-    //             'role' => hash('sha256', $user->role->id),
-    //             'role_name' => $user->role->name,
-    //             'infor' => $user->information->name,
-    //         ];
-
-    //         $data[] = $userData;
-    //     }
-
-    //     return $data;
-    // }
     public function showUser(Request $request)
     {
        

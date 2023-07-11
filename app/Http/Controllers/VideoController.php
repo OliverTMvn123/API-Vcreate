@@ -16,6 +16,10 @@ use App\Models\replycmt;
 use App\Models\likeReplycmt;
 use App\Models\album;
 use App\Models\detailAlbum;
+use App\Models\historyview;
+use App\Models\savevideo;
+use Carbon\Carbon;
+
 
 use App\Http\Controllers\HomepageController;
 
@@ -132,9 +136,7 @@ class VideoController extends Controller
                 {
                     $sha250id= $this->hashfuc($video['id']);
                     if(hash_equals($id, $sha250id))
-                    {
-                        $likesCount = $video->likevideos()->count();
-
+                    {                     
                         $videoData = $video->toArray();
                         $videoData['id'] = $this->hashfuc($videoData['id']); 
 
@@ -145,7 +147,6 @@ class VideoController extends Controller
                         
                         $user = UserInformation::find($videoData['idUser']);
                         $videoData['idUser'] = $this->hashfuc($videoData['idUser']); 
-                        $videoData['likesCount'] = $likesCount;
                         $videoData['nameUser'] = $user ? $user->name : null;
                         $videoData['avatarUser']=empty($user['avatar']) ? null : $functionController->getImage($user['avatar']);
                         $a =DB::table('ratings')->where('user_id', $user->id)->avg('rating');
@@ -273,21 +274,54 @@ class VideoController extends Controller
                 $all=[];
                 if (!empty($getvideo)) {
                     $all['CountLike'] = LikeVideo::where('video_id', $getvideo->id)->count();
+                    if(isset($request['idUser']))
+                    {
+                        if(!empty($request['idUser']))
+                        {
+                            $user=$functionController->getUserInfor($request['idUser']);
+        
+                            if (!empty($user)) {
+                                $all['status'] = LikeVideo::where('user_id', $user->id)->where('video_id',$getvideo->id)->exists();
+                            }
+                        }
+                            
+                    }
                 }else{
                     $all['CountLike'] =0;
                 }
-                if(isset($request['idUser']))
-                {
-                    if(!empty($request['idUser']))
+               
+                return $all;
+            }
+            else{
+                return false; 
+            }
+            
+        }
+        public function CheckLikeCmt(Request $request)
+        {
+            $functionController = new functionController();
+            if(isset($request['idcmt']) ){
+                $getcmt=$functionController->getcmt($request['idcmt']);
+               
+                $all=[];
+                if (!empty($getcmt)) {
+                    $all['CountLike'] = likecmt::where('cmt_id', $getcmt->id)->count();
+                    if(isset($request['idUser']))
                     {
-                        $user=$functionController->getUserInfor($request['idUser']);
-                        return $user;
-                        if (!empty($user)) {
-                            $all['status'] = LikeVideo::where('user_id', $user->id)->exists();
+                        if(!empty($request['idUser']))
+                        {
+                            $user=$functionController->getUserInfor($request['idUser']);
+        
+                            if (!empty($user)) {
+                                $all['status'] = likecmt::where('user_id', $user->id)->where('cmt_id',$getcmt->id)->exists();
+                            }
                         }
+                            
                     }
-                        
+                }else{
+                    $all['CountLike'] =0;
                 }
+               
                 return $all;
             }
             else{
@@ -306,7 +340,7 @@ class VideoController extends Controller
                             $all=shareVideo::where('video_id', $getvideo->id)->count();
                             return $all;
                         }
-                        return false;  
+                        return $all;
                     }
             else{
                 return false; 
@@ -318,29 +352,38 @@ class VideoController extends Controller
             $functionController = new functionController();
             if(isset($request['idVideo'])&& isset($request['idUser']))
                 {
-                    $likeRow=$functionController->checkLike($request['idVideo'],$request['idUser']);
-                    if(empty($likeRow))
+                    if(!empty($request['idVideo'])&&!empty($request['idUser']))
                     {
-                        
-                        $video = $functionController->getVideo($request['idVideo']);
-                        $user = $functionController->getUserInfor($request['idUser']);
-                        if(!empty($video))
+                        $likeRow=$functionController->checkLike($request['idVideo'],$request['idUser']);
+                        if(empty($likeRow))
                         {
-                            $like = new LikeVideo;
-                            $like->user_id= $user->id;
-                            $like->video_id= $video->id;
-                            $like->save();
-                            return true;
+                            
+                            $video = $functionController->getVideo($request['idVideo']);
+                            $user = $functionController->getUserInfor($request['idUser']);
+                            if(!empty($video))
+                            {
+                                $like = new LikeVideo;
+                                $like->user_id= $user->id;
+                                $like->video_id= $video->id;
+                                $like->save();
+                            
+                            }
                         }
-                    }
-                    else{
-                        $likeRow->delete();
-                        return true;
-                    }
-                    return false;
+                        else{
+                            $likeRow->delete();
+
+                        }
+                        return $this->CheckLikeVideo($request);
+                     }
+                     else{
+                        return false;
+                     }
+                    
                 }
             elseif(isset($request['idcmt'])&& isset($request['idUser']))    
             {
+                if(!empty($request['idcmt'])&&!empty($request['idUser']))
+                {
                 $likeRow=$functionController->checkLikecmt($request['idcmt'],$request['idUser']);
                 if(empty($likeRow))
                 {
@@ -353,14 +396,17 @@ class VideoController extends Controller
                         $likecmt->user_id= $user->id;
                         $likecmt->cmt_id= $cmt->id;
                         $likecmt->save();
-                        return true;
+                      
                     }
                 }
                 else{
                     $likeRow->delete();
-                    return true;
+                 
                 }
-                return false;
+                return $this->CheckLikeCmt($request);
+                 }else{
+                    return false;
+                }
             }else{
                 return false;
             }
@@ -370,6 +416,8 @@ class VideoController extends Controller
             $functionController = new functionController();
             if(isset($request['idVideo'])&& isset($request['idUser']))
             {
+                if(!empty($request['idVideo'])&&!empty($request['idUser']))
+                {
                     $video = $functionController->getVideo($request['idVideo']);
                     $user = $functionController->getUserInfor($request['idUser']);
                     if(!empty($video))
@@ -378,8 +426,9 @@ class VideoController extends Controller
                         $share->user_id= $user->id;
                         $share->video_id= $video->id;
                         $share->save();
-                        return true;
+                        return $this->countShare($request);
                     }
+                }
                 return false;
             }
         }
@@ -464,10 +513,52 @@ class VideoController extends Controller
                 return null;
             }
         }
-        public function showHistory($id){
-            
-            $data= video::all();
-            return $data;
+        public function showHistory($id)
+        {
+            if (!empty($id)) {
+                $functionController = new FunctionController();
+                $getUser = $functionController->getUserInfor($id);
+        
+                if (!empty($getUser)) {
+                    $getVideoUser = $functionController->getVideoHistory($getUser->id);
+        
+                    if (!empty($getVideoUser)) {
+                        $data = [];
+                        $dataYesterday = [];
+                        $dataOld = [];
+        
+                        foreach ($getVideoUser as $video) {
+                            $hashedId = hash('sha256', $video->id);
+                            $getvideo = $functionController->getVideo($hashedId);
+        
+                            if (!empty($getvideo)) {
+                                $getvideo1 = $getvideo->toArray();
+                                $getvideo1['id'] = hash('sha256', $getvideo->id);
+                                $getvideo1['thumbNail'] = $functionController->getImage($getvideo['thumbNail']);
+                                $getvideo1['addressVideo'] = $functionController->getVideoSource($getvideo['adressVideo']);
+                                $getvideo1['idUser'] = hash('sha256', $getvideo->idUser);
+                                unset($getvideo1['adressVideo']);
+        
+                                $createdAt = Carbon::parse($video->created_at);
+                                $getvideo1['time'] = $createdAt->diffInDays();
+        
+                                if ($getvideo1['time'] < 2) {
+                                    $dataYesterday[] = $getvideo1;
+                                } else {
+                                    $dataOld[] = $getvideo1;
+                                }
+                            }
+                        }
+        
+                        $data['yesterday'] = array_reverse($dataYesterday);
+                        $data['older'] = array_reverse($dataOld);
+        
+                        return $data;
+                    }
+                }
+            }
+        
+            return null;
         }
         public function showFriend($id)
         {
@@ -493,7 +584,7 @@ class VideoController extends Controller
                                 $row['avatar']=empty($row['avatar']) ? null : $functionController->getImage( $row['avatar']);
                                 $a=DB::table('ratings')->where('user_id', $id)->avg('rating');
                                 $row['userRating']= round($a, 1);
-                                $dataR=$row;
+                                $dataR[]=$row;
                             }
                         }
                         return $dataR;
@@ -504,5 +595,173 @@ class VideoController extends Controller
                 return null;
             }
         }
+        public function addVideo(Request $request)
+        {
+            return $request;
+            if(isset($request['titleVideo'])&& isset($request['description'])
+            && isset($request['cocreations'])&& isset($request['idAlbum'])
+            && isset($request['idUser'])&& isset($request['hashtag'])
+            && isset($request['thumbnail']
+            ))
+            {
+                $idnewVideo;
+                $idUser=[];
+                if(!empty($request['titleVideo'])&& !empty($request['description'])
+                && !empty($request['idUser'])&& !empty($request['hashtag']))
+                { 
+                    if ($request->hasFile('video')) {
+                        
+                            $video = $request->file('video');
+                            $videoName = time() . '.' . $video->getClientOriginalExtension();
+                            $video->move(public_path('storage/video'), $videoName);
+                        
+                            $thumbnail = $request->file('thumbnail');
+                            $thumbnailname = time() . '.' . $thumbnail->getClientOriginalExtension();
+                            $thumbnail->move(public_path('storage/img'), $thumbnail);
+                
+                        $data=new Video();
+                        $data['titleVideo']= $request->input('titleVideo');
+                        $data['descriptions']=$request->input('description');
+                        $data['adressVideo']=$videoName;
+                        $data['view_count']= "0";
+                        $data['idUser']=$request->idUser;
+                        $data['thumbNail']=$thumbnailname;
+                        $data->save();
+                        $idnewVideo=$data['id'];
+                        $idUser=$data['idUser'];
+                       
+                    }    
+                    if(!empty($request['cocreations']))
+                    {
+                        foreach($request['cocreations'] as $coUser)
+                        {
+                        $dataCo= new cocreation();
+                        $dataCo['user_id']=$coUser;
+                        $dataCo['video_id']=$idnewVideo;
+                        $dataCo->save();
+                        }
+                    }
+                    if(!empty($request['idAlbum']))
+                    {
+                        foreach($idUser as $coUser)
+                        $dataAL= new album();
+                        $dataAL['user_id']=$request->idUser;
+                        $dataAL['video_id']=$idnewVideo;
+                        $dataCo->save();
+                    }
+                    return true;
+                }
+            
+            }
+            return false;
+            ;
+        }
+        public function addHistory(Request $request){
+            if(isset($request['idUser'])&& isset($request['idVideo']))
+            {
+                if(!empty($request['idUser'])&& !empty($request['idVideo']))
+                {
+                    $functionController = new functionController();
+                    $video=$functionController->getVideo($request['idVideo']);
+                    $user=$functionController->getUserInfor($request['idUser']);
+                    if(!empty( $video)&& !empty( $user))
+                    {
+                        if($functionController->checkHistory($video->id,$user->id)===true)
+                        {
+                            $data=new historyview();
+                            $data['user_id']=$user['id'];
+                            $data['video_id']=$video['id'];
+                            $data->save();
+                            return "ok";
+                        }
+                      
+                    }
+                   
+                }
+                return null;
+            }
+        }
+        public function addSave(Request $request){
+            if(isset($request['idUser'])&& isset($request['idVideo']))
+            {
+                if(!empty($request['idUser'])&& !empty($request['idVideo']))
+                {
+                    $functionController = new functionController();
+                    $video=$functionController->getVideo($request['idVideo']);
+                    $user=$functionController->getUserInfor($request['idUser']);
+                    if(!empty( $video)&& !empty( $user))
+                    {
+                        if($functionController->checkHistory($video->id,$user->id)===true)
+                        {
+                            $data=new savevideo();
+                            $data['user_id']=$user['id'];
+                            $data['video_id']=$video['id'];
+                            $data->save();
+                            return "ok";
+                        }
+                      
+                    }
+                   
+                }
+                return null;
+            }
+        }
+        public function wasLike($id)
+        {
+            if (isset($id) && !empty($id)) {
+                $functionController = new FunctionController();
+                $likevideos = LikeVideo::all();
+                $data = [];
         
+                foreach ($likevideos as $likevideo) {
+                    $hashedIdUser = hash('sha256', $likevideo->user_id);
+        
+                    if (hash_equals($hashedIdUser, $id)) {
+                        $hashedIdVideo = hash('sha256', $likevideo->video_id);
+                        $getvideo = $functionController->getVideo($hashedIdVideo);
+        
+                        if (!empty($getvideo)) {
+                            $getvideo1 = $getvideo->toArray();
+                            $getvideo1['id'] = hash('sha256', $getvideo->id);
+                            $getvideo1['thumbNail'] = $functionController->getImage($getvideo->thumbNail);
+                            $getvideo1['addressVideo'] = $functionController->getVideoSource($getvideo->adressVideo);
+                            $getvideo1['idUser'] = hash('sha256', $getvideo->idUser);
+                            unset($getvideo1['adressVideo'],$getvideo1['idUser']);
+                            $data[] = $getvideo1;
+                        }
+                    }
+                }
+                return $data;
+            }
+            return null;
+        }
+        public function wasSave($id)
+        {
+            if (isset($id) && !empty($id)) {
+                $functionController = new FunctionController();
+                $likevideos = savevideo::all();
+                $data = [];
+        
+                foreach ($likevideos as $likevideo) {
+                    $hashedIdUser = hash('sha256', $likevideo->user_id);
+        
+                    if (hash_equals($hashedIdUser, $id)) {
+                        $hashedIdVideo = hash('sha256', $likevideo->video_id);
+                        $getvideo = $functionController->getVideo($hashedIdVideo);
+        
+                        if (!empty($getvideo)) {
+                            $getvideo1 = $getvideo->toArray();
+                            $getvideo1['id'] = hash('sha256', $getvideo->id);
+                            $getvideo1['thumbNail'] = $functionController->getImage($getvideo->thumbNail);
+                            $getvideo1['addressVideo'] = $functionController->getVideoSource($getvideo->adressVideo);
+                            $getvideo1['idUser'] = hash('sha256', $getvideo->idUser);
+                            unset($getvideo1['adressVideo'],$getvideo1['idUser']);
+                            $data[] = $getvideo1;
+                        }
+                    }
+                }
+                return array_reverse($data);
+            }
+            return null;
+        }
 }

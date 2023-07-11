@@ -13,11 +13,12 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('hashtag', function (Blueprint $table) {
+        Schema::create('historyview', function (Blueprint $table) {
             $table->id();
-            $table->string('hashtag')->nullable();
-            $table->unsignedBigInteger('category_id');
-            $table->foreign('category_id')->references('id')->on('categories');
+            $table->unsignedBigInteger('video_id');
+            $table->foreign('video_id')->references('id')->on('videos');
+            $table->unsignedBigInteger('user_id');
+            $table->foreign('user_id')->references('id')->on('userinformations');
             $table->timestamps();
         });
     }
@@ -29,6 +30,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('hashtag');
+        Schema::dropIfExists('historyview');
     }
 };

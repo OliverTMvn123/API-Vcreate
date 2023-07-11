@@ -76,10 +76,11 @@ Route::prefix('add')->group(function () {
     Route::post('/addviewVideo', [VideoController::class, 'addview']);
     Route::post('/addlikeVideo', [VideoController::class, 'addlike']);
     Route::post('/addShareVideo', [VideoController::class, 'addshare']);
+    Route::post('/history', [VideoController::class, 'addHistory']);
+    Route::post('/wasSave', [VideoController::class, 'addSave']);
     //add video
     Route::get('/showFriend/{id}', [VideoController::class, 'showFriend']);
-    Route::get('/showcategory/{id}', [VideoController::class, 'showcategory']);
-    Route::post('/addVideo', [VideoController::class, 'addVideo']);
+    Route::post('/addVideo', [VideoController::class, 'addVideo']); //new
 
 
 });
@@ -92,10 +93,17 @@ Route::prefix('user')->group(function () {
     Route::get('/showRating/{id}', [AuthController::class, 'showRating']);
     Route::get('/showDescription/{id}', [AuthController::class, 'showDescription']);
     Route::get('/albumUser/{id}', [VideoController::class, 'showAlbum']);
-    //////History, WAS LIKE, WAS SAVE
+    //////History
     Route::get('/history/{id}', [VideoController::class, 'showHistory']);
-    Route::post('/history', [VideoController::class, 'addHistory']); // chưa
+    //////WAS LIKE
+    Route::get('/wasLike/{id}', [VideoController::class, 'wasLike']);
+    //////WAS SAVE
+    Route::get('/wasSave/{id}', [VideoController::class, 'wasSave']);
 });
 Route::get('/videoAlbum/{id}', [VideoController::class, 'showvideoAlbum']);
+
+
+
+//// test 
 
 

@@ -13,6 +13,7 @@ use App\Models\LikeVideo;
 use App\Models\follow;
 use App\Models\album;
 use App\Models\deltailAlbum;
+use App\Models\historyview;
 
 
 use App\Models\user;
@@ -40,6 +41,28 @@ class functionController extends Controller
             }
         }
         return $data;
+    }
+    public function getVideoHistory($id)
+    {
+        $videos = historyview::all();
+        $data=[];
+        foreach ($videos as $video) {
+            if ($video->user_id==$id){
+                $data[]= $video;
+            }
+        }
+        return $data;
+    }
+    public function checkHistory($idVideo,$idUser)
+    {
+        $videos = historyview::all();
+        foreach ($videos as $video) {
+            if ($video->user_id==$idUser && $video->video_id == $idVideo )
+            {
+                $video->delete();
+            }
+        }
+        return true;
     }
     public function getcmt($id)
     {

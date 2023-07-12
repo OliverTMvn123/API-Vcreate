@@ -535,14 +535,16 @@ class VideoController extends Controller
                                 $getvideo1 = $getvideo->toArray();
                                 $getvideo1['id'] = hash('sha256', $getvideo->id);
                                 $getvideo1['thumbNail'] = $functionController->getImage($getvideo['thumbNail']);
-                                $getvideo1['addressVideo'] = $functionController->getVideoSource($getvideo['adressVideo']);
                                 $getvideo1['idUser'] = hash('sha256', $getvideo->idUser);
-                                unset($getvideo1['adressVideo']);
+                                $User= $functionController->getUserInfor($getvideo1['idUser']);
+                                $getvideo1['nameUser']=$User->name;
+                                $getvideo1['avatar']=$functionController->getImage($User->avatar);
+                                unset($getvideo1['adressVideo'],$getvideo1['updated_at'],$getvideo1['descriptions'],$getvideo1['view_count']);
         
                                 $createdAt = Carbon::parse($video->created_at);
-                                $getvideo1['time'] = $createdAt->diffInDays();
+                                //$getvideo1['time'] = $createdAt->diffInDays();
         
-                                if ($getvideo1['time'] < 2) {
+                                if ($createdAt->diffInDays() < 2) {
                                     $dataYesterday[] = $getvideo1;
                                 } else {
                                     $dataOld[] = $getvideo1;

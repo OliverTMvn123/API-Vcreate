@@ -615,15 +615,15 @@ class VideoController extends Controller
                     $functionController = new functionController();
                     $idnewVideo=1;
                     $idU;
-                    // if ($request->hasFile('video')) {
+                    if ($request->hasFile('video')) {
                         
-                    //         $video = $request->file('video');
-                    //         $videoName = time() . '.' . $video->getClientOriginalExtension();
-                    //         $video->move(public_path('storage/video'), $videoName);
+                       $video = $request->file('video');
+                            $videoName = time() . '.' . $video->getClientOriginalExtension();
+                            $video->move(public_path('storage/video'), $videoName);
                         
-                    //         $thumbnail = $request->file('thumbnail');
-                    //         $thumbnailname = time() . '.' . $thumbnail->getClientOriginalExtension();
-                    //         $thumbnail->move(public_path('storage/img'), $thumbnail);
+                            $thumbnail = $request->file('thumbnail');
+                            $thumbnailname = time() . '.' . $thumbnail->getClientOriginalExtension();
+                            $thumbnail->move(public_path('storage/img'), $thumbnail);
                 
                         $data=new Video();
                         $data['titleVideo']= $request->input('titleVideo');
@@ -636,7 +636,7 @@ class VideoController extends Controller
                         $data->save();
                         $idnewVideo=$data['id'];
                         $idU=$idUser->id;
-                    //}    
+                    }    
                     if(!empty($request['cocreations']))
                     {
                         $ids = explode(',', $request['cocreations']);

@@ -75,6 +75,17 @@ class functionController extends Controller
         }
         return null; // Trả về null nếu không tìm thấy video
     }
+    public function getcategory($id)
+    {
+        $getcategory = category::all();
+        foreach ($getcategory as $cmt) {
+            $hashedId = hash('sha256', $cmt->id);
+            if (hash_equals($hashedId, $id)) {
+                return $cmt;
+            }
+        }
+        return null; // Trả về null nếu không tìm thấy video
+    }
     public function checkLike($idVideo,$idUser)
     {
         $likevideos = LikeVideo::all();

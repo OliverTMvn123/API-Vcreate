@@ -19,6 +19,7 @@ use App\Models\detailAlbum;
 use App\Models\historyview;
 use App\Models\savevideo;
 use App\Models\cocreation;
+use App\Models\hashtag;
 use Carbon\Carbon;
 
 
@@ -628,11 +629,11 @@ class VideoController extends Controller
                         $data=new Video();
                         $data['titleVideo']= $request->input('titleVideo');
                         $data['descriptions']=$request->input('descriptions');
-                        //$data['adressVideo']=$videoName;
+                        $data['adressVideo']=$videoName;
                         $data['view_count']= "0";
                         $idUser= $functionController->getUserInfor($request->idUser);
                         $data['idUser']=$idUser->id;
-                        //$data['thumbNail']="thumbnail/".$thumbnailname;
+                        $data['thumbNail']="thumbnail/".$thumbnailname;
                         $data->save();
                         $idnewVideo=$data['id'];
                         $idU=$idUser->id;
@@ -662,6 +663,20 @@ class VideoController extends Controller
                             $dataAL['video_id']=$idnewVideo;
                             } 
                             $dataAL->save();
+                    }
+                    if(!empty($request['hashtag']))
+                    {
+                        foreach ($request['hashtag'] as $id) {
+                                $dataCo= new hashtag();
+                                $getcategory =$functionController->getcategory($request['idAlbum']);
+                                if(!empty($getcategory))
+                                {
+                                $dataCo['hashtag']=$id;
+                                $dataCo['category_id']=$getcategory['id'];
+                                $dataCo['video_id']=$idnewVideo;
+                                }
+                                $dataCo->save();
+                            }
                     }
                     return true;
                 }

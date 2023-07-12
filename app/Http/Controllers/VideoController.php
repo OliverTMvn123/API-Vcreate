@@ -18,6 +18,7 @@ use App\Models\album;
 use App\Models\detailAlbum;
 use App\Models\historyview;
 use App\Models\savevideo;
+use App\Models\cocreation;
 use Carbon\Carbon;
 
 
@@ -151,10 +152,8 @@ class VideoController extends Controller
                         $videoData['avatarUser']=empty($user['avatar']) ? null : $functionController->getImage($user['avatar']);
                         $a =DB::table('ratings')->where('user_id', $user->id)->avg('rating');
                         $videoData['userRating']= round($a, 1);
-                        $data = [
-                            $videoData
-                        ];
-                        return response()->json($data);
+                      
+                        return  $videoData;
                     } 
                     
                 }
@@ -597,18 +596,24 @@ class VideoController extends Controller
         }
         public function addVideo(Request $request)
         {
-            return $request;
-            if(isset($request['titleVideo'])&& isset($request['description'])
-            && isset($request['cocreations'])&& isset($request['idAlbum'])
-            && isset($request['idUser'])&& isset($request['hashtag'])
-            && isset($request['thumbnail']
-            ))
+    
+            if(isset($request['titleVideo']) &&
+            isset($request['descriptions']) &&
+            isset($request['cocreations']) &&
+            isset($request['album']) &&
+            isset($request['idUser']) &&
+            isset($request['hashtag'])
+            )
             {
-                $idnewVideo;
-                $idUser=[];
-                if(!empty($request['titleVideo'])&& !empty($request['description'])
-                && !empty($request['idUser'])&& !empty($request['hashtag']))
+               
+                if(!empty($request['titleVideo']) &&
+                !empty($request['descriptions']) &&
+                !empty($request['idUser']) &&
+                !empty($request['hashtag']))
                 { 
+                    $functionController = new functionController();
+                    $idnewVideo=1;
+                    $idU;
                     if ($request->hasFile('video')) {
                         
                             $video = $request->file('video');
@@ -621,40 +626,50 @@ class VideoController extends Controller
                 
                         $data=new Video();
                         $data['titleVideo']= $request->input('titleVideo');
-                        $data['descriptions']=$request->input('description');
+                        $data['descriptions']=$request->input('descriptions');
                         $data['adressVideo']=$videoName;
                         $data['view_count']= "0";
-                        $data['idUser']=$request->idUser;
-                        $data['thumbNail']=$thumbnailname;
+                        $idUser= $functionController->getUserInfor($request->idUser);
+                        $data['idUser']=$idUser->id;
+                        $data['thumbNail']="thumbnail/".$thumbnailname;
                         $data->save();
                         $idnewVideo=$data['id'];
-                        $idUser=$data['idUser'];
-                       
+                        $idU=$idUser->id;
                     }    
                     if(!empty($request['cocreations']))
                     {
                         foreach($request['cocreations'] as $coUser)
                         {
-                        $dataCo= new cocreation();
-                        $dataCo['user_id']=$coUser;
-                        $dataCo['video_id']=$idnewVideo;
-                        $dataCo->save();
+                            $dataCo= new cocreation();
+                            $getUser=$functionController->getUserInfor($coUser['id']);
+                            if(!empty($getUser))
+                            {
+                            $dataCo['user_id']=$getUser['id'];
+                            $dataCo['video_id']=$idnewVideo;
+                            }
+                            $dataCo->save();
                         }
                     }
-                    if(!empty($request['idAlbum']))
+                 
+                    if(!empty($request['album']))
                     {
-                        foreach($idUser as $coUser)
-                        $dataAL= new album();
-                        $dataAL['user_id']=$request->idUser;
-                        $dataAL['video_id']=$idnewVideo;
-                        $dataCo->save();
+                        foreach($request['album'] as $coUser)
+                        {
+                            $dataAL= new detailAlbum();
+                            $album =$functionController->getAlbum($coUser['id']);
+                            if(!empty($album))
+                            {
+                            $dataAL['album_id']= $album->id;
+                            $dataAL['video_id']=$idnewVideo;
+                            } 
+                            $dataAL->save();
+                        }
                     }
                     return true;
                 }
             
             }
             return false;
-            ;
         }
         public function addHistory(Request $request){
             if(isset($request['idUser'])&& isset($request['idVideo']))
@@ -672,7 +687,7 @@ class VideoController extends Controller
                             $data['user_id']=$user['id'];
                             $data['video_id']=$video['id'];
                             $data->save();
-                            return "ok";
+                            return "ok"; 
                         }
                       
                     }

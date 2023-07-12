@@ -30,7 +30,7 @@ class functionController extends Controller
         }
         return null; // Trả về null nếu không tìm thấy video
     }
-
+ 
     public function getVideoUser($id)
     {
         $videos = Video::all();

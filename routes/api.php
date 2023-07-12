@@ -77,10 +77,10 @@ Route::prefix('add')->group(function () {
     Route::post('/addlikeVideo', [VideoController::class, 'addlike']);
     Route::post('/addShareVideo', [VideoController::class, 'addshare']);
     Route::post('/history', [VideoController::class, 'addHistory']);
-    Route::post('/wasSave', [VideoController::class, 'addSave']);
+    Route::post('/ ', [VideoController::class, 'addSave']);
     //add video
     Route::get('/showFriend/{id}', [VideoController::class, 'showFriend']);
-    Route::post('/addVideo', [VideoController::class, 'addVideo']); //new
+    Route::post('/addVideo', [VideoController::class, 'addVideo']); 
 
 
 });
@@ -99,6 +99,7 @@ Route::prefix('user')->group(function () {
     Route::get('/wasLike/{id}', [VideoController::class, 'wasLike']);
     //////WAS SAVE
     Route::get('/wasSave/{id}', [VideoController::class, 'wasSave']);
+    
 });
 Route::get('/videoAlbum/{id}', [VideoController::class, 'showvideoAlbum']);
 

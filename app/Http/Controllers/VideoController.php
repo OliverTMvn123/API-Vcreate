@@ -600,9 +600,10 @@ class VideoController extends Controller
             if(isset($request['titleVideo']) &&
             isset($request['descriptions']) &&
             isset($request['cocreations']) &&
-            isset($request['album']) &&
+            isset($request['idAlbum']) &&
             isset($request['idUser']) &&
-            isset($request['hashtag'])
+            isset($request['hashtag'])&&
+            isset($request['idCategory'])
             )
             {
                
@@ -614,56 +615,53 @@ class VideoController extends Controller
                     $functionController = new functionController();
                     $idnewVideo=1;
                     $idU;
-                    if ($request->hasFile('video')) {
+                    // if ($request->hasFile('video')) {
                         
-                            $video = $request->file('video');
-                            $videoName = time() . '.' . $video->getClientOriginalExtension();
-                            $video->move(public_path('storage/video'), $videoName);
+                    //         $video = $request->file('video');
+                    //         $videoName = time() . '.' . $video->getClientOriginalExtension();
+                    //         $video->move(public_path('storage/video'), $videoName);
                         
-                            $thumbnail = $request->file('thumbnail');
-                            $thumbnailname = time() . '.' . $thumbnail->getClientOriginalExtension();
-                            $thumbnail->move(public_path('storage/img'), $thumbnail);
+                    //         $thumbnail = $request->file('thumbnail');
+                    //         $thumbnailname = time() . '.' . $thumbnail->getClientOriginalExtension();
+                    //         $thumbnail->move(public_path('storage/img'), $thumbnail);
                 
                         $data=new Video();
                         $data['titleVideo']= $request->input('titleVideo');
                         $data['descriptions']=$request->input('descriptions');
-                        $data['adressVideo']=$videoName;
+                        //$data['adressVideo']=$videoName;
                         $data['view_count']= "0";
                         $idUser= $functionController->getUserInfor($request->idUser);
                         $data['idUser']=$idUser->id;
-                        $data['thumbNail']="thumbnail/".$thumbnailname;
+                        //$data['thumbNail']="thumbnail/".$thumbnailname;
                         $data->save();
                         $idnewVideo=$data['id'];
                         $idU=$idUser->id;
-                    }    
+                    //}    
                     if(!empty($request['cocreations']))
                     {
-                        foreach($request['cocreations'] as $coUser)
-                        {
+                        $ids = explode(',', $request['cocreations']);
+                        foreach ($ids as $id) {
                             $dataCo= new cocreation();
-                            $getUser=$functionController->getUserInfor($coUser['id']);
+                            $getUser=$functionController->getUserInfor( $id);
                             if(!empty($getUser))
                             {
-                            $dataCo['user_id']=$getUser['id'];
-                            $dataCo['video_id']=$idnewVideo;
+                                $dataCo['user_id']=$getUser['id'];
+                                $dataCo['video_id']=$idnewVideo;
                             }
                             $dataCo->save();
                         }
                     }
                  
-                    if(!empty($request['album']))
-                    {
-                        foreach($request['album'] as $coUser)
-                        {
+                    if(!empty($request['idAlbum']))
+                    { 
                             $dataAL= new detailAlbum();
-                            $album =$functionController->getAlbum($coUser['id']);
+                            $album =$functionController->getAlbum($request['idAlbum']);
                             if(!empty($album))
                             {
                             $dataAL['album_id']= $album->id;
                             $dataAL['video_id']=$idnewVideo;
                             } 
                             $dataAL->save();
-                        }
                     }
                     return true;
                 }

@@ -400,6 +400,7 @@ class AuthController extends Controller
                             $array['name'] = $user->name;
                             $array['avatar'] = $functionController->getImage($user->avatar);
                             $array['type'] = $noti->type;
+                            $array['video_id']=$noti->video_id;
                             if (($noti->type == 2 || $noti->type == 3) && !empty($video)) {
                             
                                 $array['video']["idVideo"]= $functionController->hashfuc($video->id);
@@ -417,7 +418,14 @@ class AuthController extends Controller
                                 $createdAt = Carbon::parse($noti->created_at);
                                 $array['time'] = $createdAt->diffInDays();
                                 $array['created_at']=$noti->created_id;
-                                $key = $array['type'] . '_' . $array['time'];
+                                if(!empty($array['video_id']))
+                                {
+                                    $key = $array['type'] . '_' . $array['time']. '_' . $array['video_id'];
+                                }
+                                else{
+                                    $key = $array['type'] . '_' . $array['time'];
+                                }
+                
                                 if (!isset($nameCount[$key])) {
                                     $nameCount[$key] = [];
                                 }
@@ -434,7 +442,13 @@ class AuthController extends Controller
                  
                     $mergedArrayToday = [];
                     foreach ($arrayToday as $item) {
-                        $key = $item['type'] . '_' . $item['time'];
+                        if(!empty($item['video_id']))
+                                {
+                                    $key = $item['type'] . '_' . $item['time']. '_' . $item['video_id'];
+                                }
+                                else{
+                                    $key = $item['type'] . '_' . $item['time'];
+                                }
                         $nameList = $nameCount[$key];
                         $avatarList = $avatar[$key];
                    
@@ -457,7 +471,7 @@ class AuthController extends Controller
     
                     $mergedArrayOlder = [];
                     foreach ($arrayOlder as $item) {
-                        $key = $item['type'] . '_' . $item['time'];
+                        $key = $item['type'] . '_' . $item['time']. '_' .$noti->video_id;
                         $nameList = $nameCount[$key];
                         $avatarList = $avatar[$key];
                    

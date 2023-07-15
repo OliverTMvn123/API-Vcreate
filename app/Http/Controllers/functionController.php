@@ -42,6 +42,17 @@ class functionController extends Controller
         }
         return $data;
     }
+    public function get1Video($id)
+    {
+        $videos = Video::all();
+        $data=[];
+        foreach ($videos as $video) {
+            if ($video->idUser==$id){
+                return $video;
+            }
+        }
+        return null;
+    }
     public function getVideoHistory($id)
     {
         $videos = historyview::all();

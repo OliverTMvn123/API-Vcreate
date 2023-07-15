@@ -528,7 +528,7 @@ class VideoController extends Controller
                         $dataOld = [];
         
                         foreach ($getVideoUser as $video) {
-                            $hashedId = hash('sha256', $video->id);
+                            $hashedId = hash('sha256', $video->video_id);
                             $getvideo = $functionController->getVideo($hashedId);
         
                             if (!empty($getvideo)) {
@@ -751,12 +751,15 @@ class VideoController extends Controller
                         $getvideo = $functionController->getVideo($hashedIdVideo);
         
                         if (!empty($getvideo)) {
+                            
                             $getvideo1 = $getvideo->toArray();
                             $getvideo1['id'] = hash('sha256', $getvideo->id);
                             $getvideo1['thumbNail'] = $functionController->getImage($getvideo->thumbNail);
-                            $getvideo1['addressVideo'] = $functionController->getVideoSource($getvideo->adressVideo);
                             $getvideo1['idUser'] = hash('sha256', $getvideo->idUser);
-                            unset($getvideo1['adressVideo'],$getvideo1['idUser']);
+                            $User= $functionController->getUserInfor($getvideo1['idUser']);
+                            $getvideo1['nameUser']=$User->name;
+                            $getvideo1['avatar']=$functionController->getImage($User->avatar);
+                            unset($getvideo1['adressVideo'],$getvideo1['updated_at'],$getvideo1['descriptions'],$getvideo1['view_count']);
                             $data[] = $getvideo1;
                         }
                     }
@@ -780,12 +783,15 @@ class VideoController extends Controller
                         $getvideo = $functionController->getVideo($hashedIdVideo);
         
                         if (!empty($getvideo)) {
+                              
                             $getvideo1 = $getvideo->toArray();
                             $getvideo1['id'] = hash('sha256', $getvideo->id);
                             $getvideo1['thumbNail'] = $functionController->getImage($getvideo->thumbNail);
-                            $getvideo1['addressVideo'] = $functionController->getVideoSource($getvideo->adressVideo);
                             $getvideo1['idUser'] = hash('sha256', $getvideo->idUser);
-                            unset($getvideo1['adressVideo'],$getvideo1['idUser']);
+                            $User= $functionController->getUserInfor($getvideo1['idUser']);
+                            $getvideo1['nameUser']=$User->name;
+                            $getvideo1['avatar']=$functionController->getImage($User->avatar);
+                            unset($getvideo1['adressVideo'],$getvideo1['updated_at'],$getvideo1['descriptions'],$getvideo1['view_count']);
                             $data[] = $getvideo1;
                         }
                     }

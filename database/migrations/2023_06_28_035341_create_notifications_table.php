@@ -17,7 +17,12 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('user_id');
             $table->foreign('user_id')->references('id')->on('userinformations');
-            $table->string('content')->nullable();
+            $table->unsignedBigInteger('actionUser');
+            $table->foreign('actionUser')->references('id')->on('userinformations');
+            $table->unsignedBigInteger('type');
+            $table->foreign('type')->references('id')->on('typenotification');
+            $table->unsignedBigInteger('video_id');
+            $table->foreign('video_id')->references('id')->on('videos');
             $table->timestamps();
         });
     }

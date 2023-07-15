@@ -103,7 +103,7 @@ Route::prefix('user')->group(function () {
 });
 Route::get('/videoAlbum/{id}', [VideoController::class, 'showvideoAlbum']);
 
-
+Route::get('/notification/{id}', [AuthController::class, 'showNotification']);
 
 //// test 
 

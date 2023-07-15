@@ -18,10 +18,11 @@ use App\Http\Controllers\functionController;
 use App\Mail\OTPVerification;
 use App\Models\User;
 use App\Models\Role;
+use App\Models\notification;
 use App\Models\linksocal;
 use App\Models\userinformation;
 use App\Models\rating;
-
+use Carbon\Carbon;
 class AuthController extends Controller
 {
     public function login(Request $request)
@@ -302,6 +303,10 @@ class AuthController extends Controller
         {
             if(!empty($request['idUser']) && !empty($request['idUserCheck']))
             {
+                if(hash_equals($request['idUser'],$request['idUserCheck']))
+                {
+                    return "RS004";
+                }else{
                 $functionController = new functionController();
                 $check = $functionController->checkFollow($request['idUser'],$request['idUserCheck']);
                 if($check == 2)
@@ -316,6 +321,7 @@ class AuthController extends Controller
                 }else{
                     return "RS003";
                 }
+            }
             }
             return null;
         }
@@ -370,4 +376,170 @@ class AuthController extends Controller
     
         return null;
     }
+    public function showNotification($id)
+    {
+        if (!empty($id)) {
+            $functionController = new functionController();
+            $getUser = $functionController->getUserInfor($id);
+            if (!empty($getUser)) {
+                $data = notification::where("user_id", $getUser->id)->get();
+             
+                $reData = [];
+                if (!empty($data)) {
+                    $arrayToday = [];
+                    $arrayOlder = [];
+    
+                    $nameCount = [];
+    
+                    foreach ($data as $noti) {
+                        $hashid = $functionController->hashfuc($noti['actionUser']);
+                        $user = $functionController->getUserInfor($hashid);
+                        $video = $functionController->get1Video($noti['video_id']);
+                        if (!empty($user) ) {
+                            $array = [];
+                            $array['name'] = $user->name;
+                            $array['avatar'] = $functionController->getImage($user->avatar);
+                            $array['type'] = $noti->type;
+                            if (($noti->type == 2 || $noti->type == 3) && !empty($video)) {
+                            
+                                $array['video']["idVideo"]= $functionController->hashfuc($video->id);
+                                   
+                                $array['video']["thumbNail"]=$functionController->getImage($video->thumbNail);
+                                
+                            }
+                            else{
+                                
+                                $array['video']["idVideo"]= null;
+                                   
+                                $array['video']["thumbNail"]=null;
+                            }
+                            if ($noti->created_at) {
+                                $createdAt = Carbon::parse($noti->created_at);
+                                $array['time'] = $createdAt->diffInDays();
+                                $array['created_at']=$noti->created_id;
+                                $key = $array['type'] . '_' . $array['time'];
+                                if (!isset($nameCount[$key])) {
+                                    $nameCount[$key] = [];
+                                }
+                                $nameCount[$key][] = $array['name'];
+                                $avatar[$key][]=$array['avatar'];
+                                if ($array['time'] < 1) {
+                                    $arrayToday[] = $array;
+                                } else {
+                                    $arrayOlder[] = $array;
+                                }
+                            }
+                        }
+                    }
+                 
+                    $mergedArrayToday = [];
+                    foreach ($arrayToday as $item) {
+                        $key = $item['type'] . '_' . $item['time'];
+                        $nameList = $nameCount[$key];
+                        $avatarList = $avatar[$key];
+                   
+                        if (count($nameList) < 2) {
+                            $item['name'] = [
+                                'names' => $nameList[0],
+                            ];
+                            $item['avatar']=[$avatarList[0]];
+                            $item['name']['count'] = 0;
+                        }
+                        else{
+                            $item['name'] = [
+                                'names' => [$nameList[0],$nameList[1]]
+                            ];
+                            $item['avatar']= [$avatarList[0],$avatarList[1]];
+                            $item['name']['count'] = count($nameList) - 2;
+                        }
+                        $mergedArrayToday[] = $item;
+                    }
+    
+                    $mergedArrayOlder = [];
+                    foreach ($arrayOlder as $item) {
+                        $key = $item['type'] . '_' . $item['time'];
+                        $nameList = $nameCount[$key];
+                        $avatarList = $avatar[$key];
+                   
+                        if (count($nameList) < 2) {
+                            $item['name'] = [
+                                'names' => $nameList[0],
+                            ];
+                            $item['avatar']=[$avatarList[0]];
+                            $item['name']['count'] = 0;
+                        }
+                        else{
+                            $item['name'] = [
+                                'names' => [$nameList[0],$nameList[1]]
+                            ];
+                            $item['avatar']= [$avatarList[0],$avatarList[1]];
+                            $item['name']['count'] = count($nameList) - 2;
+                        }
+                        $mergedArrayOlder[] = $item;
+                    }
+                    
+                    $endDataToday=[];
+                    $i=0;
+                    $tam;
+                    $endDataOlder=[];
+                    $i1=0;
+                    $tam1;
+                    foreach ($mergedArrayToday as $item) 
+                        {
+                            if($i==0)
+                            {
+                                $tam=$item['name'];
+                                unset($item['time']);
+                                $endDataToday[]=$item;
+                            }
+                        
+                            if($i!=0)
+                            {
+                               if($item['name']!==$tam)
+                               {
+                                unset($item['time']);
+                                    $endDataToday[]=$item;
+                                    $tam=$item['name'];
+                               }
+    
+                            }
+                            $i++;
+                        }
+                        foreach ($mergedArrayOlder as $item) 
+                        {
+                            if($i1==0)
+                            {
+                                $tam1=$item['name'];
+                                unset($item['time']);
+                                $endDataOlder[]=$item;
+                               
+                            }
+                        
+                            if($i1!=0)
+                            {
+                               if($item['name']!==$tam1)
+                               {
+                                unset($item['time']);
+                                    $endDataOlder[]=$item;
+                                    
+                                    $tam1=$item['name'];
+                               }
+    
+                            }
+                            $i1++;
+                        }
+                        
+                    $reData['new'] = collect($endDataToday)->sortBy('time')->values()->all();
+                    $reData['older'] = collect($endDataOlder)->sortBy('time')->values()->all();
+                }
+                return $reData;
+            }
+        }
+        return null;
+    }
+    
+    
+    
+    
+    
 }

@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\follow;
 use App\Models\userinformation;
 use Illuminate\Support\Facades\DB;
+use App\Services\functionServices;
 
 class followController extends Controller
 {
@@ -16,7 +17,7 @@ class followController extends Controller
      */
     public function index()
     {
-        return follow::all();
+    
         
     }
 

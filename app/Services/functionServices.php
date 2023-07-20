@@ -1,7 +1,5 @@
 <?php
-
-namespace App\Http\Controllers;
-
+namespace App\Services;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use App\Models\Video;
@@ -17,7 +15,7 @@ use App\Models\historyview;
 
 
 use App\Models\user;
-class functionController extends Controller
+class functionServices
 {
     public function getVideo($id)
     {
@@ -241,3 +239,4 @@ class functionController extends Controller
         return $data;
     }
 }
+?>

@@ -12,7 +12,7 @@ use App\Models\slogan;
 use App\Models\startwithus;
 use App\Models\titlehomepage;
 use App\Models\videohomepage;
-
+use App\Services\functionServices;
 
 class HomepageController extends Controller
 {

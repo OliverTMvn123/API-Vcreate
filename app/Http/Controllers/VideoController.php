@@ -21,7 +21,7 @@ use App\Models\savevideo;
 use App\Models\cocreation;
 use App\Models\hashtag;
 use Carbon\Carbon;
-
+use App\Services\functionServices;
 
 use App\Http\Controllers\HomepageController;
 
@@ -142,15 +142,15 @@ class VideoController extends Controller
                         $videoData = $video->toArray();
                         $videoData['id'] = $this->hashfuc($videoData['id']); 
 
-                        $functionController = new functionController();
-                        $linkVideo = $functionController->getImage($videoData['thumbNail']);
+                        $functionServices = new functionServices();
+                        $linkVideo = $functionServices->getImage($videoData['thumbNail']);
                         $videoData['thumbNail'] = $linkVideo;
-                        $videoData['adressVideo'] = $functionController->getVideoSource($videoData['adressVideo']);
+                        $videoData['adressVideo'] = $functionServices->getVideoSource($videoData['adressVideo']);
                         
                         $user = UserInformation::find($videoData['idUser']);
                         $videoData['idUser'] = $this->hashfuc($videoData['idUser']); 
                         $videoData['nameUser'] = $user ? $user->name : null;
-                        $videoData['avatarUser']=empty($user['avatar']) ? null : $functionController->getImage($user['avatar']);
+                        $videoData['avatarUser']=empty($user['avatar']) ? null : $functionServices->getImage($user['avatar']);
                         $a =DB::table('ratings')->where('user_id', $user->id)->avg('rating');
                         $videoData['userRating']= round($a, 1);
                       
@@ -174,7 +174,7 @@ class VideoController extends Controller
                     $cocreations = $video->cocreation()->get();
                     $data = [];
              
-                    $functionController = new functionController();
+                    $functionServices = new functionServices();
                     foreach ($cocreations as $index => $cocreation) {
                         $cocreationData = []; 
                         $cocreationData["user_id"] = $this->hashfuc($cocreation->user_id);
@@ -182,7 +182,7 @@ class VideoController extends Controller
                         $user = userinformation::find($userid);
                         if ($user) {
                             $cocreationData["name"] = $user->name;
-                            $cocreationData["avatar"] = empty($user['avatar']) ? null : $functionController->getImage($user['avatar']);
+                            $cocreationData["avatar"] = empty($user['avatar']) ? null : $functionServices->getImage($user['avatar']);
                             $averageRating = DB::table('ratings')->where('user_id', $user->id)->avg('rating');
                             $cocreationData["userRating"] = round($averageRating, 1);
                         }
@@ -197,7 +197,7 @@ class VideoController extends Controller
             }
         public function showcmt($id)
         {
-            $functionController =new functionController();
+            $functionServices =new functionServices();
             $videos = Video::all();
             if (!$videos) {
                 return response()->json(['error' => 'Video not found'], 404);
@@ -214,9 +214,9 @@ class VideoController extends Controller
                         $Arrcmt['id']=$this->hashfuc($cmt['id']);
                         $Arrcmt['user_id']=$this->hashfuc($cmt['user_id']);
                         $Arrcmt['video_id']=$this->hashfuc($cmt['video_id']);
-                        $user = $functionController->getUserInfor($Arrcmt['user_id']);
+                        $user = $functionServices->getUserInfor($Arrcmt['user_id']);
                         $Arrcmt['username']=$user->name;
-                        $Arrcmt['avatar']=$functionController->getImage($user->avatar);
+                        $Arrcmt['avatar']=$functionServices->getImage($user->avatar);
                         $likesCount=likecmt::where('cmt_id',$cmt['id'])->count();
                         $Arrcmt['likesCount']=$likesCount;
                         unset($Arrcmt['updated_at']);
@@ -227,9 +227,9 @@ class VideoController extends Controller
                             $Arcmt['id']=$this->hashfuc($rcmt['id']);
                             $Arcmt['user_id']=$this->hashfuc($rcmt['user_id']);
                             $Arcmt['cmt_id']=$this->hashfuc($rcmt['cmt_id']);
-                            $user = $functionController->getUserInfor($Arcmt['user_id']);
+                            $user = $functionServices->getUserInfor($Arcmt['user_id']);
                             $Arcmt['username']=$user->name;
-                            $Arcmt['avatar']=$functionController->getImage($user->avatar);
+                            $Arcmt['avatar']=$functionServices->getImage($user->avatar);
                             $likesCount=likeReplycmt::where('cmt_id',$rcmt['id'])->count();
                             $Arcmt['likesCount']=$likesCount;
                             unset($Arcmt['updated_at']);
@@ -254,8 +254,8 @@ class VideoController extends Controller
         {
             if(isset($request['idVideo']))
                 {
-                    $functionController = new functionController();
-                    $video = $functionController->getVideo($request['idVideo']);
+                    $functionServices = new functionServices();
+                    $video = $functionServices->getVideo($request['idVideo']);
                     if(!empty($video))
                     {
                         $video->view_count++; 
@@ -267,9 +267,9 @@ class VideoController extends Controller
         }
         public function CheckLikeVideo(Request $request)
         {
-            $functionController = new functionController();
+            $functionServices = new functionServices();
             if(isset($request['idVideo']) ){
-                $getvideo=$functionController->getVideo($request['idVideo']);
+                $getvideo=$functionServices->getVideo($request['idVideo']);
                
                 $all=[];
                 if (!empty($getvideo)) {
@@ -278,7 +278,7 @@ class VideoController extends Controller
                     {
                         if(!empty($request['idUser']))
                         {
-                            $user=$functionController->getUserInfor($request['idUser']);
+                            $user=$functionServices->getUserInfor($request['idUser']);
         
                             if (!empty($user)) {
                                 $all['status'] = LikeVideo::where('user_id', $user->id)->where('video_id',$getvideo->id)->exists();
@@ -299,9 +299,9 @@ class VideoController extends Controller
         }
         public function CheckLikeCmt(Request $request)
         {
-            $functionController = new functionController();
+            $functionServices = new functionServices();
             if(isset($request['idcmt']) ){
-                $getcmt=$functionController->getcmt($request['idcmt']);
+                $getcmt=$functionServices->getcmt($request['idcmt']);
                
                 $all=[];
                 if (!empty($getcmt)) {
@@ -310,7 +310,7 @@ class VideoController extends Controller
                     {
                         if(!empty($request['idUser']))
                         {
-                            $user=$functionController->getUserInfor($request['idUser']);
+                            $user=$functionServices->getUserInfor($request['idUser']);
         
                             if (!empty($user)) {
                                 $all['status'] = likecmt::where('user_id', $user->id)->where('cmt_id',$getcmt->id)->exists();
@@ -331,10 +331,10 @@ class VideoController extends Controller
         }
         public function countShare(Request $request)
         {
-            $functionController = new functionController();
+            $functionServices = new functionServices();
             if(isset($request['idVideo']))
             {
-                    $getvideo=$functionController->getVideo($request['idVideo']);
+                    $getvideo=$functionServices->getVideo($request['idVideo']);
                         if(!empty($getvideo))
                         {
                             $all=shareVideo::where('video_id', $getvideo->id)->count();
@@ -349,17 +349,17 @@ class VideoController extends Controller
         }
         public function addlike(Request $request)
         {
-            $functionController = new functionController();
+            $functionServices = new functionServices();
             if(isset($request['idVideo'])&& isset($request['idUser']))
                 {
                     if(!empty($request['idVideo'])&&!empty($request['idUser']))
                     {
-                        $likeRow=$functionController->checkLike($request['idVideo'],$request['idUser']);
+                        $likeRow=$functionServices->checkLike($request['idVideo'],$request['idUser']);
                         if(empty($likeRow))
                         {
                             
-                            $video = $functionController->getVideo($request['idVideo']);
-                            $user = $functionController->getUserInfor($request['idUser']);
+                            $video = $functionServices->getVideo($request['idVideo']);
+                            $user = $functionServices->getUserInfor($request['idUser']);
                             if(!empty($video))
                             {
                                 $like = new LikeVideo;
@@ -384,12 +384,12 @@ class VideoController extends Controller
             {
                 if(!empty($request['idcmt'])&&!empty($request['idUser']))
                 {
-                $likeRow=$functionController->checkLikecmt($request['idcmt'],$request['idUser']);
+                $likeRow=$functionServices->checkLikecmt($request['idcmt'],$request['idUser']);
                 if(empty($likeRow))
                 {
                     
-                    $cmt = $functionController->getcmt($request['idcmt']);
-                    $user = $functionController->getUserInfor($request['idUser']);
+                    $cmt = $functionServices->getcmt($request['idcmt']);
+                    $user = $functionServices->getUserInfor($request['idUser']);
                     if(!empty($cmt))
                     {
                         $likecmt = new likecmt;
@@ -413,13 +413,13 @@ class VideoController extends Controller
         }
         public function addshare(Request $request)
         {
-            $functionController = new functionController();
+            $functionServices = new functionServices();
             if(isset($request['idVideo'])&& isset($request['idUser']))
             {
                 if(!empty($request['idVideo'])&&!empty($request['idUser']))
                 {
-                    $video = $functionController->getVideo($request['idVideo']);
-                    $user = $functionController->getUserInfor($request['idUser']);
+                    $video = $functionServices->getVideo($request['idVideo']);
+                    $user = $functionServices->getUserInfor($request['idUser']);
                     if(!empty($video))
                     {
                         $share = new shareVideo;
@@ -435,19 +435,18 @@ class VideoController extends Controller
         public function showUserVideo($id)
         {
             if (!empty($id)) {
-                $functionController = new functionController();
+                $functionServices = new functionServices();
                 $videos = Video::all();
                 $videodata = [];
                 foreach ($videos as $video) {
                     $hashedIdUser = hash('sha256', $video->idUser);
                     if (hash_equals($hashedIdUser, $id)) {
                         $videoArray = $video->toArray();
-                        $videoArray['idUser'] = $functionController->hashfuc($video->idUser);
-                        $videoArray['addressVideo'] = $functionController->getImage($video->adressVideo);
+                        $videoArray['idUser'] = $functionServices->hashfuc($video->idUser);
                         $idsave = $video['id'];
-                        unset($videoArray['adressVideo'], $videoArray['updated_at'], $videoArray['id']);
-                        $videoArray['id'] = $functionController->hashfuc($idsave);
-                        $videoArray['thumbNail'] = $functionController->getImage($video->thumbNail);
+                        unset($videoArray['adressVideo'],$videoArray['descriptions'], $videoArray['updated_at'], $videoArray['id']);
+                        $videoArray['id'] = $functionServices->hashfuc($idsave);
+                        $videoArray['thumbNail'] = $functionServices->getImage($video->thumbNail);
                         $videodata[] = $videoArray;
                     }
                 }
@@ -457,8 +456,8 @@ class VideoController extends Controller
         }
         public function showAlbum($id){
             if(!empty($id)){
-                $functionController = new functionController();
-                $data= $functionController->getAllalbum($id);
+                $functionServices = new functionServices();
+                $data= $functionServices->getAllalbum($id);
                 if(!empty($data))
                 {
                     $dataR=[];
@@ -466,10 +465,10 @@ class VideoController extends Controller
                         $row =$videoArray->toArray();
                         $save = $row['id'];
                         $row['countVideo']=detailAlbum::where('album_id',$save)->count();
-                        $row['thumbnail'] = empty($row['thumbnail']) ? null : $functionController->getImage($row['thumbnail']);
+                        $row['thumbnail'] = empty($row['thumbnail']) ? null : $functionServices->getImage($row['thumbnail']);
                         
                         unset($row['updated_at'], $row['id'],$row['user_id']);
-                        $row['id'] = $functionController->hashfuc($save);
+                        $row['id'] = $functionServices->hashfuc($save);
                         $dataR[] = $row;
                     }
                         return $dataR;
@@ -483,8 +482,8 @@ class VideoController extends Controller
         }
         public function showvideoAlbum($id){
             if(!empty($id)){
-                $functionController = new functionController();
-                $getAlbum= $functionController->getAlbum($id);
+                $functionServices = new functionServices();
+                $getAlbum= $functionServices->getAlbum($id);
                 if(!empty($getAlbum))
                 {
                     $data=detailAlbum::where('album_id',$getAlbum['id'])->get();
@@ -493,18 +492,16 @@ class VideoController extends Controller
                     {
                         $videoArray = $row->toArray();
                         $save=$videoArray['id'];
-                        $videoArray['video_id']=$functionController->hashfuc($row['video_id']);
-                        $getVideo= $functionController->getVideo($videoArray['video_id']);
-                        $videoArray['idUser'] = $functionController->hashfuc($getVideo->idUser);
-                        $videoArray['addressVideo'] =empty($getVideo->adressVideo) ? null : $functionController->getImage($getVideo->adressVideo);
-                        
+                        $videoArray['video_id']=$functionServices->hashfuc($row['video_id']);
+                        $getVideo= $functionServices->getVideo($videoArray['video_id']);
+                        $videoArray['idUser'] = $functionServices->hashfuc($getVideo->idUser);                        
                         $idsave = $getVideo['id'];
-                        $videoArray['thumbNail'] =  empty($getVideo->thumbNail) ? null : $functionController->getImage($getVideo->thumbNail);
-                   
-                        $videoArray['album_id']=$functionController->hashfuc($row['album_id']);
+                        $videoArray['thumbNail'] =  empty($getVideo->thumbNail) ? null : $functionServices->getImage($getVideo->thumbNail);
                         $videoArray['titleVideo']=$getVideo['titleVideo'];
-                        unset($videoArray['adressVideo'], $videoArray['updated_at'], $videoArray['id']);
-                        $videoArray['id'] = $functionController->hashfuc($save);
+                        $videoArray['viewCount']=$getVideo['view_count'];
+                        $videoArray['created_at']=$getVideo['created_at'];
+                        $videoArray['id'] = $functionServices->hashfuc($save);
+                        unset($videoArray['adressVideo'], $videoArray['updated_at'],$videoArray['album_id'], $videoArray['id'],$videoArray['id']);
                         $dataR[]=$videoArray;
                     }
                     return $dataR;
@@ -516,11 +513,11 @@ class VideoController extends Controller
         public function showHistory($id)
         {
             if (!empty($id)) {
-                $functionController = new FunctionController();
-                $getUser = $functionController->getUserInfor($id);
+                $functionServices = new functionServices();
+                $getUser = $functionServices->getUserInfor($id);
         
                 if (!empty($getUser)) {
-                    $getVideoUser = $functionController->getVideoHistory($getUser->id);
+                    $getVideoUser = $functionServices->getVideoHistory($getUser->id);
         
                     if (!empty($getVideoUser)) {
                         $data = [];
@@ -529,16 +526,16 @@ class VideoController extends Controller
         
                         foreach ($getVideoUser as $video) {
                             $hashedId = hash('sha256', $video->video_id);
-                            $getvideo = $functionController->getVideo($hashedId);
+                            $getvideo = $functionServices->getVideo($hashedId);
         
                             if (!empty($getvideo)) {
                                 $getvideo1 = $getvideo->toArray();
                                 $getvideo1['id'] = hash('sha256', $getvideo->id);
-                                $getvideo1['thumbNail'] = $functionController->getImage($getvideo['thumbNail']);
+                                $getvideo1['thumbNail'] = $functionServices->getImage($getvideo['thumbNail']);
                                 $getvideo1['idUser'] = hash('sha256', $getvideo->idUser);
-                                $User= $functionController->getUserInfor($getvideo1['idUser']);
+                                $User= $functionServices->getUserInfor($getvideo1['idUser']);
                                 $getvideo1['nameUser']=$User->name;
-                                $getvideo1['avatar']=$functionController->getImage($User->avatar);
+                                $getvideo1['avatar']=$functionServices->getImage($User->avatar);
                                 unset($getvideo1['adressVideo'],$getvideo1['updated_at'],$getvideo1['descriptions'],$getvideo1['view_count']);
         
                                 $createdAt = Carbon::parse($video->created_at);
@@ -565,11 +562,11 @@ class VideoController extends Controller
         public function showFriend($id)
         {
             if(!empty($id)){
-                $functionController = new functionController();
-                $getUser= $functionController->getUserInfor($id);
+                $functionServices = new functionServices();
+                $getUser= $functionServices->getUserInfor($id);
                 if(!empty($getUser))
                 {
-                    $data=$functionController->getFollower($getUser->id);
+                    $data=$functionServices->getFollower($getUser->id);
                     $dataR=[];
                     if(!empty($data))
                     {
@@ -577,13 +574,13 @@ class VideoController extends Controller
                         {
                             $hashedId = hash('sha256', $getUser->id);
                             $hashedIdCheck = hash('sha256',$row->user_follower_id);
-                            $return = $functionController->CheckFollow( $hashedId,$hashedIdCheck);
+                            $return = $functionServices->CheckFollow( $hashedId,$hashedIdCheck);
                             if($return == 2)
                             {   
                                 $id=$row['user_follower_id'];
                                 unset($row['id']);
-                                $row['user_follower_id']=$functionController->hashfuc($row['user_follower_id']);
-                                $row['avatar']=empty($row['avatar']) ? null : $functionController->getImage( $row['avatar']);
+                                $row['user_follower_id']=$functionServices->hashfuc($row['user_follower_id']);
+                                $row['avatar']=empty($row['avatar']) ? null : $functionServices->getImage( $row['avatar']);
                                 $a=DB::table('ratings')->where('user_id', $id)->avg('rating');
                                 $row['userRating']= round($a, 1);
                                 $dataR[]=$row;
@@ -615,7 +612,7 @@ class VideoController extends Controller
                 !empty($request['idUser']) &&
                 !empty($request['hashtag']))
                 { 
-                    $functionController = new functionController();
+                    $functionServices = new functionServices();
                     $idnewVideo=1;
                     $idU;
                     if ($request->hasFile('video')) {
@@ -633,7 +630,7 @@ class VideoController extends Controller
                         $data['descriptions']=$request->input('descriptions');
                         $data['adressVideo']=$videoName;
                         $data['view_count']= "0";
-                        $idUser= $functionController->getUserInfor($request->idUser);
+                        $idUser= $functionServices->getUserInfor($request->idUser);
                         $data['idUser']=$idUser->id;
                         $data['thumbNail']="thumbnail/".$thumbnailname;
                         $data->save();
@@ -645,7 +642,7 @@ class VideoController extends Controller
                         $ids = explode(',', $request['cocreations']);
                         foreach ($ids as $id) {
                             $dataCo= new cocreation();
-                            $getUser=$functionController->getUserInfor( $id);
+                            $getUser=$functionServices->getUserInfor( $id);
                             if(!empty($getUser))
                             {
                                 $dataCo['user_id']=$getUser['id'];
@@ -658,7 +655,7 @@ class VideoController extends Controller
                     if(!empty($request['idAlbum']))
                     { 
                             $dataAL= new detailAlbum();
-                            $album =$functionController->getAlbum($request['idAlbum']);
+                            $album =$functionServices->getAlbum($request['idAlbum']);
                             if(!empty($album))
                             {
                             $dataAL['album_id']= $album->id;
@@ -670,7 +667,7 @@ class VideoController extends Controller
                     {
                         foreach ($request['hashtag'] as $id) {
                                 $dataCo= new hashtag();
-                                $getcategory =$functionController->getcategory($request['idAlbum']);
+                                $getcategory =$functionServices->getcategory($request['idAlbum']);
                                 if(!empty($getcategory))
                                 {
                                 $dataCo['hashtag']=$id;
@@ -691,12 +688,12 @@ class VideoController extends Controller
             {
                 if(!empty($request['idUser'])&& !empty($request['idVideo']))
                 {
-                    $functionController = new functionController();
-                    $video=$functionController->getVideo($request['idVideo']);
-                    $user=$functionController->getUserInfor($request['idUser']);
+                    $functionServices = new functionServices();
+                    $video=$functionServices->getVideo($request['idVideo']);
+                    $user=$functionServices->getUserInfor($request['idUser']);
                     if(!empty( $video)&& !empty( $user))
                     {
-                        if($functionController->checkHistory($video->id,$user->id)===true)
+                        if($functionServices->checkHistory($video->id,$user->id)===true)
                         {
                             $data=new historyview();
                             $data['user_id']=$user['id'];
@@ -716,12 +713,12 @@ class VideoController extends Controller
             {
                 if(!empty($request['idUser'])&& !empty($request['idVideo']))
                 {
-                    $functionController = new functionController();
-                    $video=$functionController->getVideo($request['idVideo']);
-                    $user=$functionController->getUserInfor($request['idUser']);
+                    $functionServices = new functionServices();
+                    $video=$functionServices->getVideo($request['idVideo']);
+                    $user=$functionServices->getUserInfor($request['idUser']);
                     if(!empty( $video)&& !empty( $user))
                     {
-                        if($functionController->checkHistory($video->id,$user->id)===true)
+                        if($functionServices->checkHistory($video->id,$user->id)===true)
                         {
                             $data=new savevideo();
                             $data['user_id']=$user['id'];
@@ -739,7 +736,7 @@ class VideoController extends Controller
         public function wasLike($id)
         {
             if (isset($id) && !empty($id)) {
-                $functionController = new FunctionController();
+                $functionServices = new functionServices();
                 $likevideos = LikeVideo::all();
                 $data = [];
         
@@ -748,17 +745,17 @@ class VideoController extends Controller
         
                     if (hash_equals($hashedIdUser, $id)) {
                         $hashedIdVideo = hash('sha256', $likevideo->video_id);
-                        $getvideo = $functionController->getVideo($hashedIdVideo);
+                        $getvideo = $functionServices->getVideo($hashedIdVideo);
         
                         if (!empty($getvideo)) {
                             
                             $getvideo1 = $getvideo->toArray();
                             $getvideo1['id'] = hash('sha256', $getvideo->id);
-                            $getvideo1['thumbNail'] = $functionController->getImage($getvideo->thumbNail);
+                            $getvideo1['thumbNail'] = $functionServices->getImage($getvideo->thumbNail);
                             $getvideo1['idUser'] = hash('sha256', $getvideo->idUser);
-                            $User= $functionController->getUserInfor($getvideo1['idUser']);
+                            $User= $functionServices->getUserInfor($getvideo1['idUser']);
                             $getvideo1['nameUser']=$User->name;
-                            $getvideo1['avatar']=$functionController->getImage($User->avatar);
+                            $getvideo1['avatar']=$functionServices->getImage($User->avatar);
                             unset($getvideo1['adressVideo'],$getvideo1['updated_at'],$getvideo1['descriptions'],$getvideo1['view_count']);
 
                             $data[] = $getvideo1;
@@ -772,7 +769,7 @@ class VideoController extends Controller
         public function wasSave($id)
         {
             if (isset($id) && !empty($id)) {
-                $functionController = new FunctionController();
+                $functionServices = new functionServices();
                 $likevideos = savevideo::all();
                 $data = [];
         
@@ -781,17 +778,17 @@ class VideoController extends Controller
         
                     if (hash_equals($hashedIdUser, $id)) {
                         $hashedIdVideo = hash('sha256', $likevideo->video_id);
-                        $getvideo = $functionController->getVideo($hashedIdVideo);
+                        $getvideo = $functionServices->getVideo($hashedIdVideo);
         
                         if (!empty($getvideo)) {
                               
                             $getvideo1 = $getvideo->toArray();
                             $getvideo1['id'] = hash('sha256', $getvideo->id);
-                            $getvideo1['thumbNail'] = $functionController->getImage($getvideo->thumbNail);
+                            $getvideo1['thumbNail'] = $functionServices->getImage($getvideo->thumbNail);
                             $getvideo1['idUser'] = hash('sha256', $getvideo->idUser);
-                            $User= $functionController->getUserInfor($getvideo1['idUser']);
+                            $User= $functionServices->getUserInfor($getvideo1['idUser']);
                             $getvideo1['nameUser']=$User->name;
-                            $getvideo1['avatar']=$functionController->getImage($User->avatar);
+                            $getvideo1['avatar']=$functionServices->getImage($User->avatar);
                             unset($getvideo1['adressVideo'],$getvideo1['updated_at'],$getvideo1['descriptions'],$getvideo1['view_count']);
                             $data[] = $getvideo1;
                         }

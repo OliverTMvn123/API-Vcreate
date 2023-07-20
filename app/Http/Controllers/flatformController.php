@@ -6,7 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Video;
 use App\Models\userinformation;
 use App\Models\category;
-
+use App\Services\functionServices;
 use App\Http\Controllers\HomepageController;
 use App\Http\Controllers\VideoController;
 class flatformController extends Controller
@@ -18,13 +18,13 @@ public function trending(){
             $likesCount = $video->likevideos()->count();
             $cocreation = $video->cocreation()->get();
             $user = UserInformation::find($video['idUser']);
-            $functionController = new functionController();
+            $functionServices = new functionServices();
             $VideoController = new VideoController();
             $id1 = $VideoController->hashfuc($video['id']); 
             $videoArray = $video->toArray();
-            $videoArray['adressVideo']= $functionController->getVideoSource($videoArray['adressVideo']);
-            $videoArray['thumbNail'] = $functionController->getImage($videoArray['thumbNail']);
-            $videoArray['avatar'] = empty($user['avatar']) ? null : $functionController->getImage($user['avatar']);
+            $videoArray['adressVideo']= $functionServices->getVideoSource($videoArray['adressVideo']);
+            $videoArray['thumbNail'] = $functionServices->getImage($videoArray['thumbNail']);
+            $videoArray['avatar'] = empty($user['avatar']) ? null : $functionServices->getImage($user['avatar']);
             $user = UserInformation::find($videoArray['idUser']);
             $videoArray['nameUser'] = $user ? $user->name : null;
             $videoArray['idUser'] = $VideoController->hashfuc($videoArray['idUser']);
@@ -51,13 +51,13 @@ public function trending(){
             $likesCount = $video->likevideos()->count();
             $cocreation = $video->cocreation()->get();
             $user = UserInformation::find($video['idUser']);
-            $functionController = new functionController();
+            $functionServices = new functionServices();
             $VideoController = new VideoController();
             $id1 = $VideoController->hashfuc($video['id']); 
             $videoArray = $video->toArray();
-            $videoArray['adressVideo']= $functionController->getVideoSource($videoArray['adressVideo']);
-            $videoArray['thumbNail'] = $functionController->getImage($videoArray['thumbNail']);
-            $videoArray['avatar'] = empty($user['avatar']) ? null : $functionController->getImage($user['avatar']);
+            $videoArray['adressVideo']= $functionServices->getVideoSource($videoArray['adressVideo']);
+            $videoArray['thumbNail'] = $functionServices->getImage($videoArray['thumbNail']);
+            $videoArray['avatar'] = empty($user['avatar']) ? null : $functionServices->getImage($user['avatar']);
             $user = UserInformation::find($videoArray['idUser']);
             $videoArray['nameUser'] = $user ? $user->name : null;
             $videoArray['idUser'] = $VideoController->hashfuc($videoArray['idUser']);
@@ -78,7 +78,7 @@ public function trending(){
     }
     public function categories()
     {
-        $functionController= new functionController();
+        $functionServices= new functionServices();
         $data = Category::all();
         $all = [];
         foreach ($data as $category) {
@@ -88,7 +88,7 @@ public function trending(){
             unset($category1['id']);
             unset($category1['created_at']);
             unset($category1['updated_at']); 
-            $category1['background']=    empty($category['background']) ? null : $functionController->getImage($category['background']);
+            $category1['background']=    empty($category['background']) ? null : $functionServices->getImage($category['background']);
         
             $newCategory = array_merge(['id' => $id1], $category1);
             $all[] = $newCategory;

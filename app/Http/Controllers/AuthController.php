@@ -14,7 +14,6 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 
 use App\Models\TemporaryRequest;
-use App\Http\Controllers\functionController;
 use App\Mail\OTPVerification;
 use App\Models\User;
 use App\Models\Role;
@@ -22,6 +21,7 @@ use App\Models\notification;
 use App\Models\linksocal;
 use App\Models\userinformation;
 use App\Models\rating;
+use App\Services\functionServices;
 use Carbon\Carbon;
 class AuthController extends Controller
 {
@@ -35,14 +35,14 @@ class AuthController extends Controller
             $user->load('role');
             $tam = $user->load('information');
             $token = $user->createToken('authToken')->plainTextToken;
-            $functionController = new functionController();
+            $functionServices = new functionServices();
             $data = [
                 'id' => hash('sha256', $user->information['id']),
                 'email' => $user['email'],
                 'role' => hash('sha256', $user['role']->id),
                 'role_name' => $user['role']->name,
                 'infor' => $user->information->name,
-                'avatar' => empty($user->information->avatar) ? null : $functionController->getImage($user->information->avatar),
+                'avatar' => empty($user->information->avatar) ? null : $functionServices->getImage($user->information->avatar),
                 'access_token' => $token,
             ];
             return  response()->json($data);
@@ -268,23 +268,23 @@ class AuthController extends Controller
        
         if(isset($request['idUser']))
         {
-            $functionController = new functionController();
-            $user = $functionController->getUserInfor($request['idUser']);
+            $functionServices = new functionServices();
+            $user = $functionServices->getUserInfor($request['idUser']);
             if(!empty($user))
             {
                 $point= rating::where('user_id',$user->id)->avg('rating');
                 $rating = round($point, 1);
 
-                $follower= $functionController->getFollower($user->id);
-                $following= $functionController->getFollowing($user->id);
-                $videos= $functionController->getVideoUser($user->id);
+                $follower= $functionServices->getFollower($user->id);
+                $following= $functionServices->getFollowing($user->id);
+                $videos= $functionServices->getVideoUser($user->id);
 
                 $userData = [
                     'id' => hash('sha256', $user->id),
                     'name'=>$user->name,
-                    'avatar' =>    empty($user->avatar) ? null : $functionController->getImage($user->avatar),
+                    'avatar' =>    empty($user->avatar) ? null : $functionServices->getImage($user->avatar),
                   
-                    'background' =>  empty($user->background) ? null : $functionController->getImage($user->background),
+                    'background' =>  empty($user->background) ? null : $functionServices->getImage($user->background),
                     'follower'=> count($follower),
                     'following'=> count($following),
                     'countVideo'=> count($videos),
@@ -307,8 +307,8 @@ class AuthController extends Controller
                 {
                     return "RS004";
                 }else{
-                $functionController = new functionController();
-                $check = $functionController->checkFollow($request['idUser'],$request['idUserCheck']);
+                $functionServices = new functionServices();
+                $check = $functionServices->checkFollow($request['idUser'],$request['idUserCheck']);
                 if($check == 2)
                 {
                     return "RS002";
@@ -346,8 +346,8 @@ class AuthController extends Controller
     public function showDescription($id) 
     {
         if (!empty($id)) {
-            $functionController = new functionController();
-            $data = $functionController->getUserInfor($id);
+            $functionServices = new functionServices();
+            $data = $functionServices->getUserInfor($id);
             $array = [];
     
             if (!empty($data)) {
@@ -379,8 +379,8 @@ class AuthController extends Controller
     public function showNotification($id)
     {
         if (!empty($id)) {
-            $functionController = new functionController();
-            $getUser = $functionController->getUserInfor($id);
+            $functionServices = new functionServices();
+            $getUser = $functionServices->getUserInfor($id);
             if (!empty($getUser)) {
                 $data = notification::where("user_id", $getUser->id)->get();
              
@@ -392,20 +392,20 @@ class AuthController extends Controller
                     $nameCount = [];
     
                     foreach ($data as $noti) {
-                        $hashid = $functionController->hashfuc($noti['actionUser']);
-                        $user = $functionController->getUserInfor($hashid);
-                        $video = $functionController->get1Video($noti['video_id']);
+                        $hashid = $functionServices->hashfuc($noti['actionUser']);
+                        $user = $functionServices->getUserInfor($hashid);
+                        $video = $functionServices->get1Video($noti['video_id']);
                         if (!empty($user) ) {
                             $array = [];
                             $array['name'] = $user->name;
-                            $array['avatar'] = $functionController->getImage($user->avatar);
+                            $array['avatar'] = $functionServices->getImage($user->avatar);
                             $array['type'] = $noti->type;
                             $array['video_id']=$noti->video_id;
                             if (($noti->type == 2 || $noti->type == 3) && !empty($video)) {
                             
-                                $array['video']["idVideo"]= $functionController->hashfuc($video->id);
+                                $array['video']["idVideo"]= $functionServices->hashfuc($video->id);
                                    
-                                $array['video']["thumbNail"]=$functionController->getImage($video->thumbNail);
+                                $array['video']["thumbNail"]=$functionServices->getImage($video->thumbNail);
                                 
                             }
                             else{

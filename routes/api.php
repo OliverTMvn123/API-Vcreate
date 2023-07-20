@@ -108,3 +108,4 @@ Route::get('/notification/{id}', [AuthController::class, 'showNotification']);
 //// test 
 
 
+Route::get('/test', [followController::class, 'index']);
